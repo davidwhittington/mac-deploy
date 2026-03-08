@@ -127,9 +127,9 @@ echo
 echo "### Secure Boot"
 echo
 if [[ "$(uname -m)" == "arm64" ]]; then
-  BOOT=$(check bputil -d 2>/dev/null | grep -i "security" | head -5)
+  BOOT=$(bputil -d 2>/dev/null | grep -i "security" | head -5 || true)
   if [[ -z "$BOOT" ]]; then
-    echo "- **Status:** Unable to read (try with sudo)"
+    echo "- **Status:** Unable to read without sudo — run \`sudo bputil -d\` to inspect"
   else
     echo "\`\`\`"
     echo "$BOOT"
@@ -161,7 +161,11 @@ echo "## Sharing Services"
 echo
 
 # Remote Login (SSH)
-SSH_STATE=$(check systemsetup -getremotelogin 2>/dev/null || launchctl list com.openssh.sshd 2>/dev/null | grep -q "PID" && echo "On" || echo "Off")
+if launchctl list com.openssh.sshd &>/dev/null; then
+  SSH_STATE="⚠️  ENABLED"
+else
+  SSH_STATE="✅ Disabled"
+fi
 echo "| Service | Status |"
 echo "|---------|--------|"
 printf "| Remote Login (SSH) | %s |\n" "$SSH_STATE"
@@ -201,7 +205,7 @@ if [[ -f "$SSHD_CONF" ]]; then
     local key="$1"
     local good_val="$2"
     local val
-    val=$(grep -i "^${key}" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1)
+    val=$(grep -i "^${key}" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
     val="${val:-<default>}"
     if [[ "$val" == "$good_val" ]] || [[ "$val" == "<default>" && "$good_val" == "<default>" ]]; then
       icon="✅"
@@ -232,10 +236,9 @@ echo "## Listening Services & Open Ports"
 echo
 echo "\`\`\`"
 if command -v lsof &>/dev/null; then
-  sudo lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | awk 'NR==1 || !seen[$1,$9]++' || \
-    lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | awk 'NR==1 || !seen[$1,$9]++'
+  lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | awk 'NR==1 || !seen[$1,$9]++' || true
 else
-  netstat -an | grep LISTEN
+  netstat -an 2>/dev/null | grep LISTEN || true
 fi
 echo "\`\`\`"
 echo
@@ -296,10 +299,10 @@ AUTO_DL=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticD
 AUTO_INSTALL=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates 2>/dev/null || echo "unknown")
 SEC_INSTALL=$(defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall 2>/dev/null || echo "unknown")
 
-[[ "$AUTO_CHECK" == "1" ]] && AUTO_CHECK_S="✅ Enabled" || AUTO_CHECK_S="❌ Disabled ($AUTO_CHECK)"
-[[ "$AUTO_DL" == "1" ]] && AUTO_DL_S="✅ Enabled" || AUTO_DL_S="⚠️  Disabled ($AUTO_DL)"
-[[ "$AUTO_INSTALL" == "1" ]] && AUTO_INSTALL_S="✅ Enabled" || AUTO_INSTALL_S="⚠️  $AUTO_INSTALL"
-[[ "$SEC_INSTALL" == "1" ]] && SEC_S="✅ Enabled" || SEC_S="⚠️  $SEC_INSTALL"
+if [[ "$AUTO_CHECK" == "1" ]]; then AUTO_CHECK_S="✅ Enabled"; else AUTO_CHECK_S="❌ Disabled ($AUTO_CHECK)"; fi
+if [[ "$AUTO_DL" == "1" ]]; then AUTO_DL_S="✅ Enabled"; else AUTO_DL_S="⚠️  Disabled ($AUTO_DL)"; fi
+if [[ "$AUTO_INSTALL" == "1" ]]; then AUTO_INSTALL_S="✅ Enabled"; else AUTO_INSTALL_S="⚠️  $AUTO_INSTALL"; fi
+if [[ "$SEC_INSTALL" == "1" ]]; then SEC_S="✅ Enabled"; else SEC_S="⚠️  $SEC_INSTALL"; fi
 
 echo "| Automatic Check | $AUTO_CHECK_S |"
 echo "| Automatic Download | $AUTO_DL_S |"
@@ -357,11 +360,11 @@ done
 
 # SSH password auth
 if [[ -f "$SSHD_CONF" ]]; then
-  PASS_AUTH=$(grep -i "^PasswordAuthentication" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1)
+  PASS_AUTH=$(grep -i "^PasswordAuthentication" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
   if [[ "$PASS_AUTH" != "no" ]]; then
     finding "SSH PasswordAuthentication not explicitly disabled" "🟠 High" "Set \`PasswordAuthentication no\` in /etc/ssh/sshd_config"
   fi
-  ROOT_LOGIN=$(grep -i "^PermitRootLogin" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1)
+  ROOT_LOGIN=$(grep -i "^PermitRootLogin" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
   if [[ "$ROOT_LOGIN" != "no" ]]; then
     finding "SSH PermitRootLogin not explicitly disabled" "🟡 Medium" "Set \`PermitRootLogin no\` in /etc/ssh/sshd_config"
   fi
@@ -373,4 +376,4 @@ fi
 
 echo
 echo
-echo "_End of audit report for \`$HOSTNAME\` — $DATE_"
+echo "_End of audit report for \`$HOSTNAME\` — ${DATE}_"
