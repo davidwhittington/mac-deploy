@@ -91,15 +91,15 @@ Installs Homebrew if missing, restores packages from the saved Brewfile, and cop
 
 The audit script checks:
 
-- **Disk encryption** - FileVault on/off
-- **System integrity** - SIP, Gatekeeper, Secure Boot
-- **Firewall** - Application Firewall state, stealth mode, block-all
-- **Sharing services** - SSH, Screen Sharing, Remote Management (ARD), File Sharing, Internet Sharing, Remote Apple Events
-- **SSH server config** - PasswordAuthentication, PermitRootLogin, PubkeyAuthentication
-- **Open ports** - all TCP listeners via lsof
-- **User accounts** - local users, admin group membership
-- **macOS updates** - automatic check / download / install policy
-- **Installed packages** - full Homebrew formula and cask list
+- **Disk encryption** — FileVault on/off
+- **System integrity** — SIP, Gatekeeper, Secure Boot
+- **Firewall** — Application Firewall state, stealth mode, block-all
+- **Sharing services** — SSH, Screen Sharing, Remote Management (ARD), File Sharing, Internet Sharing, Remote Apple Events
+- **SSH server config** — PasswordAuthentication, PermitRootLogin, PubkeyAuthentication
+- **Open ports** — all TCP listeners via lsof
+- **User accounts** — local users, admin group membership
+- **macOS updates** — automatic check / download / install policy
+- **Installed packages** — full Homebrew formula and cask list
 
 Outputs structured markdown with a **Findings Summary** table that flags issues by severity (Critical / High / Medium).
 
@@ -147,7 +147,7 @@ git commit -m "Add private submodule"
 
 Technical documentation in [docs/guides/](docs/guides/):
 
-- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) - set up key-based SSH across multiple Macs; disable password auth
+- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) — set up key-based SSH across multiple Macs; disable password auth
 
 ---
 

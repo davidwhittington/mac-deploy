@@ -33,8 +33,8 @@ Do this on the machine you'll be connecting **from**. If you already have a key 
 ssh-keygen -t ed25519 -C "david@macbook-pro"
 ```
 
-- **`-t ed25519`** - use Ed25519 (modern, compact, faster than RSA)
-- **`-C`** - comment to identify the key; use something meaningful like `user@hostname`
+- **`-t ed25519`** — use Ed25519 (modern, compact, faster than RSA)
+- **`-C`** — comment to identify the key; use something meaningful like `user@hostname`
 
 When prompted:
 - **Key location:** accept the default (`~/.ssh/id_ed25519`) unless you have a reason to change it
@@ -59,7 +59,7 @@ cat ~/.ssh/id_ed25519.pub
 
 ## Step 2 - Copy the Public Key to the Server
 
-**Option A - `ssh-copy-id` (easiest, requires password auth to still be on):**
+**Option A — `ssh-copy-id` (easiest, requires password auth to still be on):**
 
 ```bash
 ssh-copy-id -i ~/.ssh/id_ed25519.pub david@<target-hostname-or-ip>
@@ -67,7 +67,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub david@<target-hostname-or-ip>
 
 This appends your public key to `~/.ssh/authorized_keys` on the target machine automatically.
 
-**Option B - Manual copy:**
+**Option B — Manual copy:**
 
 ```bash
 # On the target machine, create the .ssh directory if needed
@@ -78,7 +78,7 @@ echo "ssh-ed25519 AAAA... david@macbook-pro" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-**Option C - From local machine via pipe (if you can already SSH in):**
+**Option C — From local machine via pipe (if you can already SSH in):**
 
 ```bash
 cat ~/.ssh/id_ed25519.pub | ssh david@<target> "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
@@ -242,14 +242,14 @@ done
 ## Security Notes
 
 - **Never copy your private key** (`id_ed25519`, no `.pub`) to another machine - generate a new pair on each client instead
-- **Use a passphrase** - a key without one is equivalent to a password written on a sticky note
+- **Use a passphrase** — a key without one is equivalent to a password written on a sticky note
 - **Rotate keys** if a machine is compromised or decommissioned - remove the old public key from all `authorized_keys` files
-- **Audit authorized_keys** periodically - run `cat ~/.ssh/authorized_keys` on each server and verify every entry is recognized
+- **Audit authorized_keys** periodically — run `cat ~/.ssh/authorized_keys` on each server and verify every entry is recognized
 
 ---
 
 ## Related
 
-- [Security Baseline](../security/README.md) - SSH requirements in the lab security policy
-- [Workstation Template](../workstations/TEMPLATE.md) - SSH configuration section in the per-machine doc
-- `scripts/audit/security-audit.sh` - audits SSH config and reports findings automatically
+- [Security Baseline](../security/README.md) — SSH requirements in the lab security policy
+- [Workstation Template](../workstations/TEMPLATE.md) — SSH configuration section in the per-machine doc
+- `scripts/audit/security-audit.sh` — audits SSH config and reports findings automatically
