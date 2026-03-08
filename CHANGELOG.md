@@ -9,6 +9,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.4.0] - 2026-03-08
+
+### Added
+- `docs/guides/removing-insecure-services.md` — step-by-step disabling of ARD, Screen Sharing, Remote Apple Events, Internet Sharing, File Sharing, Bluetooth Sharing, Wake for Network Access, and AirDrop; includes per-service launchctl verification, post-update re-enable detection, and a full one-shot checklist script
+
+### Changed
+- `docs/guides/README.md` — added new guide to index
+- `README.md` — added new guide to Guides section
+
+---
+
 ## [0.3.0] - 2026-03-08
 
 ### Added

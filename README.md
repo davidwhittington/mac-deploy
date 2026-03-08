@@ -151,6 +151,7 @@ Technical documentation in [docs/guides/](docs/guides/):
 - [SSH Fleet Key Management](docs/guides/ssh-fleet-key-management.md) — manage keys across multiple machines; rotation, auditing, ~/.ssh/config
 - [Firewall: Application Firewall vs pf](docs/guides/firewall-pf-vs-application-firewall.md) — port-level rules with pf; solving the SSH/block-all conflict
 - [Automated Security Drift Detection](docs/guides/automated-security-drift-detection.md) — schedule audits with launchd; alert on security state changes
+- [Removing and Disabling Insecure Services](docs/guides/removing-insecure-services.md) — ARD, Screen Sharing, Remote Apple Events, AirDrop; verification and post-update recovery
 
 ---
 
