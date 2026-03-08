@@ -170,10 +170,18 @@ echo "| Service | Status |"
 echo "|---------|--------|"
 printf "| Remote Login (SSH) | %s |\n" "$SSH_STATE"
 
-# Check other sharing services via launchctl / system_profiler
+# ARD — check listening ports (5900 VNC, 3283 ARD); launchd entry always exists
+# due to SIP but OnDemand=true means it only runs when connections are accepted
+if lsof -iTCP:5900 -sTCP:LISTEN -P -n 2>/dev/null | grep -q . || \
+   lsof -iTCP:3283 -sTCP:LISTEN -P -n 2>/dev/null | grep -q .; then
+  printf "| Remote Management (ARD) | ⚠️  ENABLED |\n"
+else
+  printf "| Remote Management (ARD) | ✅ Disabled |\n"
+fi
+
+# Other sharing services via launchctl
 for service in \
   "com.apple.screensharing:Screen Sharing" \
-  "com.apple.RemoteDesktop.agent:Remote Management (ARD)" \
   "com.apple.smbd:File Sharing (SMB)" \
   "com.apple.AppleFileServer:File Sharing (AFP)" \
   "com.apple.remoteevents:Remote Apple Events" \
@@ -354,14 +362,19 @@ if ! echo "$FW_STATE" | grep -qi "enabled"; then
   finding "Application Firewall disabled" "🟠 High" "Enable in System Settings → Network → Firewall"
 fi
 
-# Sharing services
-for svc in "com.apple.screensharing" "com.apple.RemoteDesktop.agent" "com.apple.InternetSharing" "com.apple.remoteevents"; do
+# ARD — port-based check (launchd entry is SIP-protected and always present)
+if lsof -iTCP:5900 -sTCP:LISTEN -P -n 2>/dev/null | grep -q . || \
+   lsof -iTCP:3283 -sTCP:LISTEN -P -n 2>/dev/null | grep -q .; then
+  finding "Remote Management (ARD) is accepting connections" "🟠 High" "Disable in System Settings → General → Sharing → Remote Management"
+fi
+
+# Other sharing services
+for svc in "com.apple.screensharing" "com.apple.InternetSharing" "com.apple.remoteevents"; do
   if launchctl list "$svc" &>/dev/null; then
     case "$svc" in
-      com.apple.screensharing) finding "Screen Sharing is enabled" "🟡 Medium" "Disable unless required: System Settings → Sharing" ;;
-      com.apple.RemoteDesktop.agent) finding "Remote Management (ARD) is enabled" "🟠 High" "Disable if not needed: \`sudo kickstart -deactivate\`" ;;
-      com.apple.InternetSharing) finding "Internet Sharing is enabled" "🟠 High" "Disable in System Settings → Sharing" ;;
-      com.apple.remoteevents) finding "Remote Apple Events enabled" "🟡 Medium" "Disable in System Settings → Sharing" ;;
+      com.apple.screensharing) finding "Screen Sharing is enabled" "🟡 Medium" "Disable in System Settings → General → Sharing" ;;
+      com.apple.InternetSharing) finding "Internet Sharing is enabled" "🟠 High" "Disable in System Settings → General → Sharing" ;;
+      com.apple.remoteevents) finding "Remote Apple Events enabled" "🟡 Medium" "Disable in System Settings → General → Sharing" ;;
     esac
   fi
 done
