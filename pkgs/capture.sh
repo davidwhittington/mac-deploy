@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # capture.sh — snapshot current workstation's packages and shell config
-# Saves to pkgs/machines/<hostname>/
+# Saves to private/machines/<hostname>/  (private submodule)
 # Usage: bash pkgs/capture.sh [--zsh-only | --brew-only]
 
 set -euo pipefail
@@ -9,7 +9,7 @@ MODE="${1:-all}"
 HOSTNAME=$(hostname -s)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-PROFILE_DIR="$SCRIPT_DIR/machines/$HOSTNAME"
+PROFILE_DIR="$REPO_ROOT/private/machines/$HOSTNAME"
 DATE=$(date +%Y-%m-%d)
 
 echo "==> Capturing workstation profile for: $HOSTNAME"

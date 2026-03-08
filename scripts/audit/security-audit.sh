@@ -1,13 +1,31 @@
 #!/usr/bin/env bash
 # security-audit.sh — macOS workstation security posture audit
-# Usage: bash security-audit.sh [--brief]
-# Output: Markdown-formatted report suitable for docs/workstations/<hostname>.md
+# Usage: bash security-audit.sh [--brief] [--save]
+#   --brief  Skip package lists
+#   --save   Write report to private/workstations/<hostname>-<date>.md
+# Output: Markdown-formatted report (stdout by default)
 
 set -euo pipefail
 
-BRIEF=${1:-""}
+BRIEF=""
+SAVE=false
+for arg in "$@"; do
+  [[ "$arg" == "--brief" ]] && BRIEF="--brief"
+  [[ "$arg" == "--save" ]]  && SAVE=true
+done
+
 HOSTNAME=$(hostname -s)
 DATE=$(date +%Y-%m-%d)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+PRIVATE_DIR="$REPO_ROOT/private/workstations"
+
+if $SAVE; then
+  mkdir -p "$PRIVATE_DIR"
+  OUTFILE="$PRIVATE_DIR/${HOSTNAME}-${DATE}.md"
+  exec > >(tee "$OUTFILE")
+  echo "==> Saving report to: $OUTFILE" >&2
+fi
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
