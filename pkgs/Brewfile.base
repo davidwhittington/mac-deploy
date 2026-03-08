@@ -1,0 +1,53 @@
+# Brewfile.base — shared baseline packages for all lab workstations
+# Install with: brew bundle install --file=pkgs/Brewfile.base
+#
+# This is the minimum common toolset. Machine-specific packages live in
+# pkgs/machines/<hostname>/Brewfile
+
+# ── Core CLI Tools ────────────────────────────────────────────────────────────
+brew "git"
+brew "curl"
+brew "wget"
+brew "jq"
+brew "yq"
+brew "tree"
+brew "htop"
+brew "ripgrep"
+brew "fd"
+brew "bat"
+brew "eza"           # modern ls replacement
+brew "fzf"
+brew "tmux"
+brew "zoxide"        # smarter cd
+
+# ── Networking / Security ─────────────────────────────────────────────────────
+brew "nmap"
+brew "netcat"
+brew "mtr"
+brew "tcpdump"
+brew "wireshark"     # CLI tools only (tshark)
+brew "openssh"
+
+# ── Development ───────────────────────────────────────────────────────────────
+brew "gh"            # GitHub CLI
+brew "git-delta"     # better git diffs
+brew "pre-commit"
+brew "shellcheck"    # shell script linting
+brew "make"
+brew "cmake"
+
+# ── Shell / Terminal ──────────────────────────────────────────────────────────
+brew "starship"      # prompt
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+brew "zsh-completions"
+
+# ── Productivity ──────────────────────────────────────────────────────────────
+brew "mas"           # Mac App Store CLI
+
+# ── Casks (GUI Apps) — comment out what's not needed ─────────────────────────
+# cask "iterm2"
+# cask "visual-studio-code"
+# cask "homebrew/cask/docker"
+# cask "rectangle"   # window management
+# cask "1password"

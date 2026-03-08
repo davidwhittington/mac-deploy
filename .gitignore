@@ -1,0 +1,28 @@
+# Private data — never commit
+private/
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+*.secret
+.env
+.env.*
+*.env
+
+# Machine-specific captures with potentially sensitive data
+pkgs/machines/*/defaults/
+pkgs/machines/*/shell/.zsh_history
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+
+# Logs
+*.log
+audit-*.txt
