@@ -160,8 +160,8 @@ hr
 echo "## Sharing Services"
 echo
 
-# Remote Login (SSH)
-if launchctl list com.openssh.sshd &>/dev/null; then
+# Remote Login (SSH) — check port 22 directly; launchctl misses socket-activated sshd
+if lsof -iTCP:22 -sTCP:LISTEN -P -n 2>/dev/null | grep -q sshd; then
   SSH_STATE="⚠️  ENABLED"
 else
   SSH_STATE="✅ Disabled"
@@ -204,8 +204,16 @@ if [[ -f "$SSHD_CONF" ]]; then
   check_sshd() {
     local key="$1"
     local good_val="$2"
-    local val
-    val=$(grep -i "^${key}" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
+    local val=""
+    # Check drop-in files first (sorted; first value wins in sshd)
+    for dropin in $(ls /etc/ssh/sshd_config.d/*.conf 2>/dev/null | sort); do
+      val=$(grep -i "^${key}" "$dropin" 2>/dev/null | awk '{print $2}' | head -1 || true)
+      [[ -n "$val" ]] && break
+    done
+    # Fall back to main sshd_config if not found in drop-ins
+    if [[ -z "$val" ]]; then
+      val=$(grep -i "^${key}" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
+    fi
     val="${val:-<default>}"
     if [[ "$val" == "$good_val" ]] || [[ "$val" == "<default>" && "$good_val" == "<default>" ]]; then
       icon="✅"
@@ -222,7 +230,7 @@ if [[ -f "$SSHD_CONF" ]]; then
   check_sshd "UsePAM" "<default>"
   check_sshd "Port" "22"
   check_sshd "AllowUsers" "<default>"
-  check_sshd "MaxAuthTries" "<default>"
+  check_sshd "MaxAuthTries" "3"
 else
   echo "- \`/etc/ssh/sshd_config\` not found (SSH may not be installed/enabled)"
 fi
@@ -358,15 +366,25 @@ for svc in "com.apple.screensharing" "com.apple.RemoteDesktop.agent" "com.apple.
   fi
 done
 
-# SSH password auth
+# SSH password auth — check drop-ins first, then main config
+get_sshd_val() {
+  local key="$1" val=""
+  for dropin in $(ls /etc/ssh/sshd_config.d/*.conf 2>/dev/null | sort); do
+    val=$(grep -i "^${key}" "$dropin" 2>/dev/null | awk '{print $2}' | head -1 || true)
+    [[ -n "$val" ]] && break
+  done
+  [[ -z "$val" ]] && val=$(grep -i "^${key}" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
+  echo "$val"
+}
+
 if [[ -f "$SSHD_CONF" ]]; then
-  PASS_AUTH=$(grep -i "^PasswordAuthentication" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
+  PASS_AUTH=$(get_sshd_val "PasswordAuthentication")
   if [[ "$PASS_AUTH" != "no" ]]; then
-    finding "SSH PasswordAuthentication not explicitly disabled" "🟠 High" "Set \`PasswordAuthentication no\` in /etc/ssh/sshd_config"
+    finding "SSH PasswordAuthentication not explicitly disabled" "🟠 High" "Set \`PasswordAuthentication no\` in /etc/ssh/sshd_config.d/099-hardening.conf"
   fi
-  ROOT_LOGIN=$(grep -i "^PermitRootLogin" "$SSHD_CONF" 2>/dev/null | awk '{print $2}' | head -1 || true)
+  ROOT_LOGIN=$(get_sshd_val "PermitRootLogin")
   if [[ "$ROOT_LOGIN" != "no" ]]; then
-    finding "SSH PermitRootLogin not explicitly disabled" "🟡 Medium" "Set \`PermitRootLogin no\` in /etc/ssh/sshd_config"
+    finding "SSH PermitRootLogin not explicitly disabled" "🟡 Medium" "Set \`PermitRootLogin no\` in /etc/ssh/sshd_config.d/099-hardening.conf"
   fi
 fi
 

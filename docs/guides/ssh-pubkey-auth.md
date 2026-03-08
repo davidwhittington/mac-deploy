@@ -134,17 +134,18 @@ If you see `Authenticated using "publickey"` - you're good to proceed.
 macOS uses `/etc/ssh/sshd_config.d/` for drop-in configuration (files here override the base config). Create a hardening file:
 
 ```bash
-sudo tee /etc/ssh/sshd_config.d/099-hardening.conf << 'EOF'
-# Pubkey auth only - no passwords, no root
-PasswordAuthentication no
-PermitRootLogin no
-PubkeyAuthentication yes
-KbdInteractiveAuthentication no
-ChallengeResponseAuthentication no
-MaxAuthTries 3
-LoginGraceTime 30
-EOF
+printf '%s\n' \
+  'PasswordAuthentication no' \
+  'PermitRootLogin no' \
+  'PubkeyAuthentication yes' \
+  'KbdInteractiveAuthentication no' \
+  'ChallengeResponseAuthentication no' \
+  'MaxAuthTries 3' \
+  'LoginGraceTime 30' \
+  | sudo tee /etc/ssh/sshd_config.d/099-hardening.conf
 ```
+
+> Note: heredoc (`<< EOF`) syntax breaks when pasted into most terminals due to indentation handling. `printf` is paste-safe and produces identical output.
 
 Validate the config before reloading:
 
