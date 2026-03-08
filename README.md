@@ -2,7 +2,7 @@
 
 A personal toolkit for deploying, standardizing, and auditing macOS workstations across lab environments. Scripts to capture and restore full machine environments, security posture auditing with markdown output, and shell configuration symmetry across machines.
 
-Designed to be **repeatable and auditable** — run the audit script on any machine and get a consistent, structured report. Capture a working environment and restore it identically elsewhere.
+Designed to be **repeatable and auditable** - run the audit script on any machine and get a consistent, structured report. Capture a working environment and restore it identically elsewhere.
 
 **Tested on:** macOS Sequoia / Tahoe · Apple Silicon (M-series) · zsh
 
@@ -10,9 +10,9 @@ Designed to be **repeatable and auditable** — run the audit script on any mach
 
 ## Background
 
-Managing multiple workstations across lab environments creates drift — different packages installed, different shell configs, inconsistent security settings, no record of what's running where. This toolkit came out of the need to answer basic questions reliably: *Is FileVault on? What's listening on the network? When was this machine last audited? How do I get a new machine to look like the others?*
+Managing multiple workstations across lab environments creates drift - different packages installed, different shell configs, inconsistent security settings, no record of what's running where. This toolkit came out of the need to answer basic questions reliably: *Is FileVault on? What's listening on the network? When was this machine last audited? How do I get a new machine to look like the others?*
 
-The goal is a standardized baseline: repeatable deployment, consistent shell environment, and a documented security posture for every machine — with actual per-machine data kept private and out of the public repo.
+The goal is a standardized baseline: repeatable deployment, consistent shell environment, and a documented security posture for every machine - with actual per-machine data kept private and out of the public repo.
 
 ---
 
@@ -46,7 +46,7 @@ mac-deploy/
 │       └── security-audit.sh   # Full security posture audit → markdown
 ├── shell/                # Shared zsh config, aliases, env vars (coming)
 ├── config/               # App and tool config templates (coming)
-└── private/              # Git submodule — per-machine data (not public)
+└── private/              # Git submodule - per-machine data (not public)
 ```
 
 ---
@@ -91,15 +91,15 @@ Installs Homebrew if missing, restores packages from the saved Brewfile, and cop
 
 The audit script checks:
 
-- **Disk encryption** — FileVault on/off
-- **System integrity** — SIP, Gatekeeper, Secure Boot
-- **Firewall** — Application Firewall state, stealth mode, block-all
-- **Sharing services** — SSH, Screen Sharing, Remote Management (ARD), File Sharing, Internet Sharing, Remote Apple Events
-- **SSH server config** — PasswordAuthentication, PermitRootLogin, PubkeyAuthentication
-- **Open ports** — all TCP listeners via lsof
-- **User accounts** — local users, admin group membership
-- **macOS updates** — automatic check / download / install policy
-- **Installed packages** — full Homebrew formula and cask list
+- **Disk encryption** - FileVault on/off
+- **System integrity** - SIP, Gatekeeper, Secure Boot
+- **Firewall** - Application Firewall state, stealth mode, block-all
+- **Sharing services** - SSH, Screen Sharing, Remote Management (ARD), File Sharing, Internet Sharing, Remote Apple Events
+- **SSH server config** - PasswordAuthentication, PermitRootLogin, PubkeyAuthentication
+- **Open ports** - all TCP listeners via lsof
+- **User accounts** - local users, admin group membership
+- **macOS updates** - automatic check / download / install policy
+- **Installed packages** - full Homebrew formula and cask list
 
 Outputs structured markdown with a **Findings Summary** table that flags issues by severity (Critical / High / Medium).
 
@@ -117,13 +117,13 @@ bash scripts/audit/security-audit.sh --brief
 
 See [docs/workstations/](docs/workstations/) for the machine inventory table and documentation template.
 
-Per-machine audit reports (with real hostnames, IPs, and findings) are stored in the private submodule — see the section below.
+Per-machine audit reports (with real hostnames, IPs, and findings) are stored in the private submodule - see the section below.
 
 ---
 
 ## Public / Private Split
 
-Generic scripts and templates live here (public). Machine-specific data — actual audit reports, captured package profiles, network topology — lives in a companion private repo mounted as a git submodule at `private/`.
+Generic scripts and templates live here (public). Machine-specific data - actual audit reports, captured package profiles, network topology - lives in a companion private repo mounted as a git submodule at `private/`.
 
 ```
 mac-deploy/          ← public: scripts, templates, guides
@@ -147,16 +147,16 @@ git commit -m "Add private submodule"
 
 Technical documentation in [docs/guides/](docs/guides/):
 
-- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) — set up key-based SSH across multiple Macs; disable password auth
+- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) - set up key-based SSH across multiple Macs; disable password auth
 
 ---
 
 ## Security Baseline
 
-See [docs/security/README.md](docs/security/README.md) for the full baseline — required settings, recommended settings, and a reference table of insecure services to audit or remove.
+See [docs/security/README.md](docs/security/README.md) for the full baseline - required settings, recommended settings, and a reference table of insecure services to audit or remove.
 
 ---
 
 ## License
 
-MIT — use freely, adapt for your own lab.
+MIT - use freely, adapt for your own lab.

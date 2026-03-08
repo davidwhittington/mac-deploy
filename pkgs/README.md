@@ -1,6 +1,6 @@
 # Package Management & Workstation Re-deployment
 
-Scripts in this directory capture and restore the full software environment of a macOS workstation — Homebrew packages, casks, zsh preferences, and related tooling.
+Scripts in this directory capture and restore the full software environment of a macOS workstation - Homebrew packages, casks, zsh preferences, and related tooling.
 
 ## Workflow
 

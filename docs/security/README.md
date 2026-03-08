@@ -6,21 +6,21 @@ All lab workstations should meet the following minimum security baseline:
 
 ### Required (Critical)
 
-- [ ] **FileVault enabled** — full disk encryption on all machines
-- [ ] **SIP enabled** — System Integrity Protection must not be disabled
-- [ ] **Gatekeeper enabled** — block unsigned/unnotarized software
-- [ ] **Application Firewall enabled** — with stealth mode on
-- [ ] **SSH PasswordAuthentication disabled** — key-based auth only
-- [ ] **PermitRootLogin disabled** — no direct root SSH
-- [ ] **Screen Sharing / Remote Management disabled** — unless explicitly needed
+- [ ] **FileVault enabled** - full disk encryption on all machines
+- [ ] **SIP enabled** - System Integrity Protection must not be disabled
+- [ ] **Gatekeeper enabled** - block unsigned/unnotarized software
+- [ ] **Application Firewall enabled** - with stealth mode on
+- [ ] **SSH PasswordAuthentication disabled** - key-based auth only
+- [ ] **PermitRootLogin disabled** - no direct root SSH
+- [ ] **Screen Sharing / Remote Management disabled** - unless explicitly needed
 
 ### Recommended (High)
 
-- [ ] **Secure Boot: Full Security** — on Apple Silicon and T2 machines
-- [ ] **Automatic macOS updates enabled** — security patches applied promptly
+- [ ] **Secure Boot: Full Security** - on Apple Silicon and T2 machines
+- [ ] **Automatic macOS updates enabled** - security patches applied promptly
 - [ ] **Guest account disabled**
-- [ ] **FileVault recovery key backed up securely** — not stored on-device
-- [ ] **SSH on non-standard port** — reduce automated scan exposure
+- [ ] **FileVault recovery key backed up securely** - not stored on-device
+- [ ] **SSH on non-standard port** - reduce automated scan exposure
 
 ### Optional (Medium)
 
@@ -47,13 +47,13 @@ The following services are commonly left enabled and represent unnecessary attac
 
 | Service | Risk | How to Disable |
 |---------|------|---------------|
-| Remote Apple Events | Medium — allows AppleScript execution over network | System Settings → Sharing → uncheck |
+| Remote Apple Events | Medium - allows AppleScript execution over network | System Settings → Sharing → uncheck |
 | Bluetooth Sharing | Low-Medium | System Settings → Sharing → uncheck |
-| Internet Sharing | High — can expose network | System Settings → Sharing → uncheck |
+| Internet Sharing | High - can expose network | System Settings → Sharing → uncheck |
 | Wake for network access | Low-Medium | System Settings → Battery → uncheck |
-| Remote Management (ARD) | High — full screen/keyboard control | `sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -deactivate` |
+| Remote Management (ARD) | High - full screen/keyboard control | `sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -deactivate` |
 | mDNSResponder broadcasts | Low | Not typically disabled, but monitor |
-| tftp / ftp | High — if running | `sudo launchctl unload -w /System/Library/LaunchDaemons/tftp.plist` |
+| tftp / ftp | High - if running | `sudo launchctl unload -w /System/Library/LaunchDaemons/tftp.plist` |
 
 ---
 

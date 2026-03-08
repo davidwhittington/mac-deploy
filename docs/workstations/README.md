@@ -4,7 +4,7 @@ Each workstation has its own documentation file capturing hardware specs, OS sta
 
 ## Naming Convention
 
-Files are named `<hostname>.md` — use the machine's actual hostname (`hostname` command output).
+Files are named `<hostname>.md` - use the machine's actual hostname (`hostname` command output).
 
 ## How to Document a Machine
 
