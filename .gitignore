@@ -1,5 +1,5 @@
 # Private data — never commit
-private/
+# Note: private/ is a submodule (mac-deploy-private), not ignored
 secrets/
 *.key
 *.pem
