@@ -147,7 +147,10 @@ git commit -m "Add private submodule"
 
 Technical documentation in [docs/guides/](docs/guides/):
 
-- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) — set up key-based SSH across multiple Macs; disable password auth
+- [SSH Pubkey Authentication](docs/guides/ssh-pubkey-auth.md) — set up key-based SSH on a single Mac; disable password auth
+- [SSH Fleet Key Management](docs/guides/ssh-fleet-key-management.md) — manage keys across multiple machines; rotation, auditing, ~/.ssh/config
+- [Firewall: Application Firewall vs pf](docs/guides/firewall-pf-vs-application-firewall.md) — port-level rules with pf; solving the SSH/block-all conflict
+- [Automated Security Drift Detection](docs/guides/automated-security-drift-detection.md) — schedule audits with launchd; alert on security state changes
 
 ---
 

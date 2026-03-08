@@ -9,6 +9,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.3.0] - 2026-03-08
+
+### Added
+- `docs/guides/firewall-pf-vs-application-firewall.md` — Application Firewall vs pf deep dive: stealth mode, block-all tradeoffs, pf anchor setup, LaunchDaemon for persistence, recommended lab config
+- `docs/guides/ssh-fleet-key-management.md` — SSH key management across a lab fleet: per-client key strategy, naming conventions, ~/.ssh/config host blocks, fleet deployment script, key rotation workflow, authorized_keys audit script
+- `docs/guides/automated-security-drift-detection.md` — launchd-based scheduled auditing: drift detection via report diff, system log integration, LaunchAgent plist, audit history in private submodule
+- `scripts/audit/scheduled-audit.sh` — wrapper script for launchd; runs audit, diffs against previous report, logs drift to private submodule and macOS system log
+
+### Changed
+- `docs/guides/README.md` — updated guide index with all four guides
+- `README.md` — updated Guides section with all four guides
+
+---
+
 ## [0.2.0] - 2026-03-08
 
 ### Added
