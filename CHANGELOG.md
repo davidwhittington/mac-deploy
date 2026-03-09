@@ -9,6 +9,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.7.0] - 2026-03-09
+
+### Added
+- `scripts/brew-upgrade.sh` — Homebrew upgrade with change logging: `brew update` → captures outdated list → `brew upgrade` → `brew cleanup`; logs dated summary to `private/machines/<hostname>/brew-upgrades.log`; supports `--dry-run`, `--no-casks`
+- `scripts/apply-defaults.sh` — macOS system preferences hardening: screen lock (password required immediately, 5-min idle), screenshot redirect, Finder settings, AirDrop contacts-only, Mail remote content blocking, Safari security settings, Software Update policy; supports `--dry-run`
+
+### Changed
+- `scripts/audit/security-audit.sh` — four new security checks:
+  - Bluetooth state via `system_profiler` (Medium finding if on)
+  - Developer mode via `DevToolsSecurity` (Medium finding if enabled)
+  - World-readable files in `~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/op` (High finding)
+  - Sudoers NOPASSWD entries in `/etc/sudoers` and `/etc/sudoers.d/` (High finding)
+  - New sections: Sensitive File Permissions, Sudoers Configuration
+
+---
+
 ## [0.6.0] - 2026-03-09
 
 ### Added
