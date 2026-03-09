@@ -26,10 +26,36 @@ set -uo pipefail
 
 AUTO=false
 AUDIT_ONLY=false
+CONFIRM=false
 for arg in "${@:-}"; do
   [[ "$arg" == "--auto" ]]       && AUTO=true
   [[ "$arg" == "--audit-only" ]] && AUDIT_ONLY=true
+  [[ "$arg" == "--confirm" ]]    && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    cat <<'HELPBANNER'
+
+  ╔══════════════════════════════════════════════════════╗
+  ║           mac-security — first-run bootstrap          ║
+  ║    macOS workstation security hardening toolkit      ║
+  ╚══════════════════════════════════════════════════════╝
+
+HELPBANNER
+    echo "Bootstrap a new or freshly wiped Mac to the mac-security security baseline."
+    echo
+    echo "Usage:"
+    echo "  bash scripts/first-run.sh [--auto] [--audit-only] [--confirm]"
+    echo
+    echo "Flags:"
+    echo "  --auto         Apply all hardening steps without prompting"
+    echo "  --audit-only   Run the security audit only, skip all hardening"
+    echo "  --confirm      Pass --confirm to sub-scripts (skips their confirmation prompts)"
+    echo "  --help         Show this help and exit"
+    exit 0
+  fi
 done
+
+# When --auto is set, sub-scripts should also skip their confirmation prompts
+$AUTO && CONFIRM=true
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -213,7 +239,9 @@ if confirm "  Apply SSH hardening?"; then
   fi
 
   if [[ -n "$HARDEN_SSH" ]]; then
-    sudo bash "$HARDEN_SSH"
+    EXTRA_FLAGS=""
+    ($CONFIRM || $AUTO) && EXTRA_FLAGS="--confirm"
+    sudo bash "$HARDEN_SSH" $EXTRA_FLAGS
   else
     echo "  harden-sshd.sh not found. Run manually from the mac-security repo."
   fi
@@ -248,7 +276,9 @@ if confirm "  Enable Application Firewall with stealth mode?"; then
   fi
 
   if [[ -n "$FIREWALL_SCRIPT" ]]; then
-    sudo bash "$FIREWALL_SCRIPT"
+    EXTRA_FLAGS=""
+    ($CONFIRM || $AUTO) && EXTRA_FLAGS="--confirm"
+    sudo bash "$FIREWALL_SCRIPT" $EXTRA_FLAGS
   else
     echo "  enable-stealth-firewall.sh not found. Run manually from the mac-security repo."
   fi

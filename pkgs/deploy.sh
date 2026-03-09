@@ -9,13 +9,39 @@ set -euo pipefail
 PROFILE_HOST="${1:-}"
 MODE="${2:-all}"
 DRY_RUN=false
+CONFIRM=false
 
 # Flag parsing
 for arg in "$@"; do
-  [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+  [[ "$arg" == "--dry-run" ]]  && DRY_RUN=true
   [[ "$arg" == "--zsh-only" ]] && MODE="--zsh-only"
   [[ "$arg" == "--brew-only" ]] && MODE="--brew-only"
+  [[ "$arg" == "--confirm" ]]  && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "deploy.sh — deploy a saved workstation profile to the current machine"
+    echo
+    echo "Usage:"
+    echo "  bash pkgs/deploy.sh <profile-hostname> [--dry-run] [--confirm] [--zsh-only | --brew-only]"
+    echo
+    echo "Flags:"
+    echo "  --dry-run     Show what would be done without making changes"
+    echo "  --zsh-only    Restore shell config files only"
+    echo "  --brew-only   Restore Homebrew packages only"
+    echo "  --confirm     Skip the interactive confirmation prompt"
+    echo "  --help        Show this help and exit"
+    exit 0
+  fi
 done
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROFILE_DIR="$SCRIPT_DIR/machines/$PROFILE_HOST"
@@ -40,6 +66,12 @@ echo "==> Deploying profile from: $PROFILE_HOST"
 echo "==> Profile directory: $PROFILE_DIR"
 $DRY_RUN && echo "==> DRY RUN — no changes will be made"
 echo
+
+echo "This script will:"
+echo "  - Restores Homebrew packages and overwrites shell config (~/.zshrc, ~/.zprofile, etc.) and ~/.gitconfig. Existing files will be backed up."
+echo
+
+require_confirm
 
 run() {
   # run <description> <command...>

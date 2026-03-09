@@ -2,8 +2,9 @@
 # harden-sshd.sh — apply SSH hardening config to macOS sshd
 # Writes /etc/ssh/sshd_config.d/099-hardening.conf and reloads sshd.
 #
-# Usage: sudo bash scripts/harden-sshd.sh [--dry-run]
+# Usage: sudo bash scripts/harden-sshd.sh [--dry-run] [--confirm]
 #   --dry-run  Show what would be written without making changes
+#   --confirm  Skip the interactive confirmation prompt
 #
 # Requirements: must run as root (sudo)
 
@@ -12,9 +13,33 @@ set -euo pipefail
 # ── args ──────────────────────────────────────────────────────────────────────
 
 DRY_RUN=false
+CONFIRM=false
 for arg in "$@"; do
   [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+  [[ "$arg" == "--confirm" ]] && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "harden-sshd.sh — apply SSH hardening config to macOS sshd"
+    echo
+    echo "Usage:"
+    echo "  sudo bash scripts/harden-sshd.sh [--dry-run] [--confirm]"
+    echo
+    echo "Flags:"
+    echo "  --dry-run   Show what would be written without making changes"
+    echo "  --confirm   Skip the interactive confirmation prompt"
+    echo "  --help      Show this help and exit"
+    exit 0
+  fi
 done
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 # ── checks ────────────────────────────────────────────────────────────────────
 
@@ -63,6 +88,13 @@ echo "Config: $CONF_FILE"
 echo
 echo "$CONF_CONTENT"
 echo
+
+echo "This script will:"
+echo "  - Write $CONF_FILE"
+echo "  - Reload sshd (if Remote Login is active)"
+echo
+
+require_confirm
 
 # ── dry run ───────────────────────────────────────────────────────────────────
 

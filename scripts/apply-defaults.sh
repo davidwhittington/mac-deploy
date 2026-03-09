@@ -30,11 +30,33 @@
 set -euo pipefail
 
 DRY_RUN=false
+CONFIRM=false
 for arg in "$@"; do
   [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+  [[ "$arg" == "--confirm" ]] && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "apply-defaults.sh — apply hardened macOS system defaults"
+    echo
+    echo "Usage:"
+    echo "  bash scripts/apply-defaults.sh [--dry-run] [--confirm]"
+    echo
+    echo "Flags:"
+    echo "  --dry-run   Print each default that would be written without applying it"
+    echo "  --confirm   Skip the interactive confirmation prompt"
+    echo "  --help      Show this help and exit"
+    exit 0
+  fi
 done
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 APPLIED=0
 SKIPPED=0
@@ -71,6 +93,12 @@ echo "Machine: $(hostname -s)"
 $DRY_RUN && echo "Mode:    DRY RUN — no changes will be written"
 [[ "$EUID" -ne 0 ]] && echo "Note:    Running without sudo — system-level settings will be skipped."
 echo
+
+echo "This script will:"
+echo "  - Writes macOS system preferences. Kills Finder and SystemUIServer to apply changes."
+echo
+
+require_confirm
 
 # ── screen lock & password ────────────────────────────────────────────────────
 

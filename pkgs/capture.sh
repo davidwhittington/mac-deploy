@@ -5,6 +5,21 @@
 
 set -euo pipefail
 
+for arg in "$@"; do
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "capture.sh — snapshot current workstation's packages and shell config"
+    echo
+    echo "Usage:"
+    echo "  bash pkgs/capture.sh [--zsh-only | --brew-only]"
+    echo
+    echo "Flags:"
+    echo "  --zsh-only    Capture shell config files only"
+    echo "  --brew-only   Capture Homebrew packages only"
+    echo "  --help        Show this help and exit"
+    exit 0
+  fi
+done
+
 MODE="${1:-all}"
 HOSTNAME=$(hostname -s)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

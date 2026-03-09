@@ -12,6 +12,18 @@ SAVE=false
 for arg in "$@"; do
   [[ "$arg" == "--brief" ]] && BRIEF="--brief"
   [[ "$arg" == "--save" ]]  && SAVE=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "security-audit.sh — full macOS security posture audit. Outputs structured Markdown."
+    echo
+    echo "Usage:"
+    echo "  bash scripts/audit/security-audit.sh [--brief] [--save]"
+    echo
+    echo "Flags:"
+    echo "  --brief   Skip package lists"
+    echo "  --save    Write report to private/workstations/<hostname>-<date>.md"
+    echo "  --help    Show this help and exit"
+    exit 0
+  fi
 done
 
 HOSTNAME=$(hostname -s)

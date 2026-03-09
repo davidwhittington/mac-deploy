@@ -20,10 +20,35 @@ set -euo pipefail
 
 DRY_RUN=false
 WITH_PF=false
+CONFIRM=false
 for arg in "$@"; do
   [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
   [[ "$arg" == "--with-pf" ]] && WITH_PF=true
+  [[ "$arg" == "--confirm" ]] && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "enable-stealth-firewall.sh — enable Application Firewall with stealth mode"
+    echo
+    echo "Usage:"
+    echo "  sudo bash scripts/enable-stealth-firewall.sh [--with-pf] [--dry-run] [--confirm]"
+    echo
+    echo "Flags:"
+    echo "  --with-pf   Also configure pf: allow SSH (port 22) inbound, block all other inbound"
+    echo "  --dry-run   Show what would change without making changes"
+    echo "  --confirm   Skip the interactive confirmation prompt"
+    echo "  --help      Show this help and exit"
+    exit 0
+  fi
 done
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 # ── checks ────────────────────────────────────────────────────────────────────
 
@@ -59,6 +84,18 @@ printf "  Application Firewall: %s\n" "$($SFW --getglobalstate 2>/dev/null | awk
 printf "  Stealth mode:         %s\n" "$($SFW --getstealthmode  2>/dev/null | awk '{print $NF}' || echo 'unknown')"
 printf "  Block-all:            %s\n" "$($SFW --getblockall     2>/dev/null | awk '{print $NF}' || echo 'unknown')"
 echo
+
+echo "This script will:"
+echo "  - Enable the Application Firewall"
+echo "  - Enable stealth mode"
+if $WITH_PF; then
+  echo "  - Write /etc/pf.anchors/mac-security (allow port 22, block all other inbound)"
+  echo "  - Update /etc/pf.conf with mac-security anchor"
+  echo "  - Load and enable pf"
+fi
+echo
+
+require_confirm
 
 # ── dry run ───────────────────────────────────────────────────────────────────
 

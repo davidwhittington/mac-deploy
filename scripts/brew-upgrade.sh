@@ -19,10 +19,35 @@ set -euo pipefail
 
 DRY_RUN=false
 NO_CASKS=false
+CONFIRM=false
 for arg in "$@"; do
   [[ "$arg" == "--dry-run" ]]  && DRY_RUN=true
   [[ "$arg" == "--no-casks" ]] && NO_CASKS=true
+  [[ "$arg" == "--confirm" ]]  && CONFIRM=true
+  if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+    echo "brew-upgrade.sh — update all Homebrew packages and log what changed"
+    echo
+    echo "Usage:"
+    echo "  bash scripts/brew-upgrade.sh [--dry-run] [--no-casks] [--confirm]"
+    echo
+    echo "Flags:"
+    echo "  --dry-run    Show what would be upgraded without installing anything"
+    echo "  --no-casks   Upgrade formulae only, skip casks"
+    echo "  --confirm    Skip the interactive confirmation prompt"
+    echo "  --help       Show this help and exit"
+    exit 0
+  fi
 done
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 # ── paths ─────────────────────────────────────────────────────────────────────
 
@@ -82,6 +107,12 @@ if [[ -n "$OUTDATED_CASKS" ]] && ! $NO_CASKS; then
   echo "$OUTDATED_CASKS" | sed 's/^/      /'
 fi
 echo
+
+echo "This script will:"
+echo "  - Upgrades all outdated Homebrew packages listed above."
+echo
+
+require_confirm
 
 # ── dry run exit ──────────────────────────────────────────────────────────────
 

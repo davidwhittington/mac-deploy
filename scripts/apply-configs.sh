@@ -41,6 +41,7 @@ set -euo pipefail
 
 DRY_RUN=false
 LIST=false
+CONFIRM=false
 MANIFEST_ARG=""
 MACHINE_NAME="$(hostname -s)"
 
@@ -50,6 +51,21 @@ while [[ $# -gt 0 ]]; do
     --list)              LIST=true ;;
     --manifest)          MANIFEST_ARG="$2"; shift ;;
     --machine)           MACHINE_NAME="$2"; shift ;;
+    --confirm)           CONFIRM=true ;;
+    --help|-h)
+      echo "apply-configs.sh — render application config templates and deploy them to their destination paths"
+      echo
+      echo "Usage:"
+      echo "  bash scripts/apply-configs.sh [options]"
+      echo
+      echo "Flags:"
+      echo "  --dry-run              Show what would change without writing anything"
+      echo "  --list                 List available templates, current settings, and manifest entries"
+      echo "  --manifest <file>      Use a custom manifest file"
+      echo "  --machine <hostname>   Load settings for a specific machine (default: current hostname)"
+      echo "  --confirm              Skip the interactive confirmation prompt"
+      echo "  --help                 Show this help and exit"
+      exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
   shift
@@ -67,6 +83,14 @@ MACHINE_SETTINGS="$REPO_ROOT/private/machines/${MACHINE_NAME}/configs.env"
 [[ -n "$MANIFEST_ARG" ]] && MANIFEST="$MANIFEST_ARG" || MANIFEST="$CONFIGS_DIR/manifests/default.conf"
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
+require_confirm() {
+  $CONFIRM && return
+  $DRY_RUN && return
+  printf "  Type AGREE to continue or Ctrl+C to abort: "
+  read -r _CONFIRM_REPLY
+  [[ "$_CONFIRM_REPLY" == "AGREE" ]] || { echo "Aborted."; exit 0; }
+}
 
 load_env() {
   # load_env <file> — source KEY=VALUE pairs safely (no arbitrary shell execution)
@@ -189,6 +213,12 @@ echo "Manifest: $MANIFEST"
 echo "Settings: $MACHINE_SETTINGS_STATUS"
 $DRY_RUN && echo "Mode:     DRY RUN — no files will be written"
 echo
+
+echo "This script will:"
+echo "  - Writes rendered config files to their destination paths. Backs up existing files before overwriting."
+echo
+
+require_confirm
 
 if [[ ! -f "$MANIFEST" ]]; then
   echo "ERROR: manifest not found: $MANIFEST" >&2
