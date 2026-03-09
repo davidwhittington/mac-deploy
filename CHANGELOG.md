@@ -9,6 +9,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.6.0] - 2026-03-09
+
+### Added
+- `scripts/apply-configs.sh` — application config templating engine: renders `${VAR}` placeholders in templates using layered settings files, diffs against existing destinations, backs up before writing; SSH config safety guard prevents silent overwrites; supports `--dry-run`, `--list`, `--manifest`, `--machine`
+- `configs/templates/git/gitconfig.tmpl` — git config template: name, email, editor, default branch, credential helper, aliases, color output
+- `configs/templates/ssh/config.tmpl` — SSH client config template: ControlMaster, keepalive, key path, lab host blocks
+- `configs/templates/zsh/zshrc-base.tmpl` — zsh base config: history, completion, Homebrew init, Starship or fallback prompt, common aliases, local override sourcing
+- `configs/templates/starship/starship.toml.tmpl` — Starship prompt config: git branch/status, command duration, hostname
+- `configs/settings/defaults.env` — base variable values; override per machine via `private/machines/<hostname>/configs.env`
+- `configs/manifests/default.conf` — default template-to-destination mapping; customizable per machine
+
+---
+
 ## [0.5.0] - 2026-03-08
 
 ### Added
