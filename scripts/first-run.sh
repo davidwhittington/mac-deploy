@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# first-run.sh — bootstrap a new or freshly wiped Mac to the mac-deploy security baseline
+# first-run.sh — bootstrap a new or freshly wiped Mac to the mac-security security baseline
 #
 # What this script does, in order:
 #   1. Checks macOS version and architecture
 #   2. Installs Homebrew if not present
-#   3. Taps davidwhittington/mac-deploy and installs the tools
+#   3. Taps davidwhittington/mac-security and installs the tools
 #   4. Runs a security audit and shows the Findings Summary
 #   5. Offers to apply SSH hardening (harden-sshd.sh)
 #   6. Offers to enable the Application Firewall with stealth mode
@@ -18,7 +18,7 @@
 # Notes:
 #   - SSH hardening requires sudo
 #   - Firewall hardening requires sudo
-#   - Run from the repo root if you've cloned mac-deploy; or download and run standalone
+#   - Run from the repo root if you've cloned mac-security; or download and run standalone
 
 set -uo pipefail
 
@@ -54,14 +54,14 @@ clear
 cat <<'BANNER'
 
   ╔══════════════════════════════════════════════════════╗
-  ║           mac-deploy — first-run bootstrap           ║
+  ║           mac-security — first-run bootstrap          ║
   ║    macOS workstation security hardening toolkit      ║
   ╚══════════════════════════════════════════════════════╝
 
   This script will:
     1. Verify your macOS environment
     2. Install Homebrew (if needed)
-    3. Install mac-deploy tools via Homebrew tap
+    3. Install mac-security tools via Homebrew tap
     4. Run a security audit on this machine
     5. Offer to harden SSH configuration
     6. Offer to enable the Application Firewall
@@ -113,7 +113,7 @@ else
   echo "  Homebrew not found."
   echo
   echo "  Homebrew is a package manager for macOS. It's required to install"
-  echo "  mac-deploy and keep it updated. The installer script is fetched from"
+  echo "  mac-security and keep it updated. The installer script is fetched from"
   echo "  https://brew.sh — review it at https://github.com/Homebrew/install"
   echo
   if confirm "  Install Homebrew now?"; then
@@ -128,22 +128,22 @@ else
   fi
 fi
 
-# ── step 3: mac-deploy tools ──────────────────────────────────────────────────
+# ── step 3: mac-security tools ────────────────────────────────────────────────
 
-header "Step 3 — mac-deploy Tools"
+header "Step 3 — mac-security Tools"
 
 if command -v brew &>/dev/null; then
-  echo "  Tapping davidwhittington/mac-deploy..."
-  brew tap davidwhittington/mac-deploy --quiet 2>/dev/null || true
+  echo "  Tapping davidwhittington/mac-security..."
+  brew tap davidwhittington/mac-security --quiet 2>/dev/null || true
 
-  if brew list mac-deploy &>/dev/null; then
-    echo "  mac-deploy is already installed."
+  if brew list mac-security &>/dev/null; then
+    echo "  mac-security is already installed."
     echo "  Checking for updates..."
-    brew upgrade mac-deploy 2>/dev/null | tail -3 || echo "  Already at latest version."
+    brew upgrade mac-security 2>/dev/null | tail -3 || echo "  Already at latest version."
   else
-    echo "  Installing mac-deploy..."
-    brew install mac-deploy --quiet
-    echo "  Installed: mac-deploy-audit, mac-deploy-capture, mac-deploy-deploy"
+    echo "  Installing mac-security..."
+    brew install mac-security --quiet
+    echo "  Installed: mac-security-audit, mac-security-capture, mac-security-deploy"
   fi
 else
   echo "  Homebrew not available — tools will run from repo scripts."
@@ -160,8 +160,8 @@ echo
 
 # Find the audit script — prefer installed version, fall back to repo
 AUDIT_CMD=""
-if command -v mac-deploy-audit &>/dev/null; then
-  AUDIT_CMD="mac-deploy-audit"
+if command -v mac-security-audit &>/dev/null; then
+  AUDIT_CMD="mac-security-audit"
 elif [[ -f "$(dirname "$0")/../scripts/audit/security-audit.sh" ]]; then
   AUDIT_CMD="bash $(dirname "$0")/audit/security-audit.sh"
 elif [[ -f "scripts/audit/security-audit.sh" ]]; then
@@ -215,7 +215,7 @@ if confirm "  Apply SSH hardening?"; then
   if [[ -n "$HARDEN_SSH" ]]; then
     sudo bash "$HARDEN_SSH"
   else
-    echo "  harden-sshd.sh not found. Run manually from the mac-deploy repo."
+    echo "  harden-sshd.sh not found. Run manually from the mac-security repo."
   fi
 else
   echo "  Skipping SSH hardening."
@@ -250,7 +250,7 @@ if confirm "  Enable Application Firewall with stealth mode?"; then
   if [[ -n "$FIREWALL_SCRIPT" ]]; then
     sudo bash "$FIREWALL_SCRIPT"
   else
-    echo "  enable-stealth-firewall.sh not found. Run manually from the mac-deploy repo."
+    echo "  enable-stealth-firewall.sh not found. Run manually from the mac-security repo."
   fi
 else
   echo "  Skipping firewall hardening."
@@ -277,13 +277,13 @@ cat <<'DONE'
   Bootstrap complete.
 
   Next steps:
-    - Review the full audit:   mac-deploy-audit
-    - Save audit to history:   mac-deploy-audit --save
-    - Snapshot this machine:   mac-deploy-capture
-    - Read the guides:         https://github.com/davidwhittington/mac-deploy/tree/main/docs/guides
+    - Review the full audit:   mac-security-audit
+    - Save audit to history:   mac-security-audit --save
+    - Snapshot this machine:   mac-security-capture
+    - Read the guides:         https://github.com/davidwhittington/mac-security/tree/main/docs/guides
 
   Scheduling daily audits:
-    cp config/launchagents/com.mac-deploy.security-audit.plist ~/Library/LaunchAgents/
-    launchctl load ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist
+    cp config/launchagents/com.mac-security.security-audit.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.mac-security.security-audit.plist
 
 DONE

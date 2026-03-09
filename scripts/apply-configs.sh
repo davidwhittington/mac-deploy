@@ -90,7 +90,7 @@ render() {
 
   if command -v python3 &>/dev/null; then
     local py
-    py=$(mktemp /tmp/mac-deploy-render.XXXXXX.py)
+    py=$(mktemp /tmp/mac-security-render.XXXXXX.py)
     cat > "$py" << 'PYEOF'
 import os, re, sys
 
@@ -138,7 +138,7 @@ fi
 
 if $LIST; then
   echo
-  echo "=== mac-deploy Config Templates ==="
+  echo "=== mac-security Config Templates ==="
   echo
   echo "Machine:  $MACHINE_NAME"
   echo "Manifest: $MANIFEST"
@@ -222,7 +222,7 @@ while IFS=: read -r tmpl_rel dest || [[ -n "$tmpl_rel" ]]; do
 
   # Special handling for ~/.ssh/config — never silently overwrite
   if [[ "$dest_expanded" == "$HOME/.ssh/config" && -f "$dest_expanded" ]]; then
-    SAFE_DEST="$HOME/.ssh/config.mac-deploy"
+    SAFE_DEST="$HOME/.ssh/config.mac-security"
     echo "  Note: ~/.ssh/config exists — writing to $SAFE_DEST to avoid overwriting."
     echo "        Review and merge into ~/.ssh/config manually."
     dest_expanded="$SAFE_DEST"

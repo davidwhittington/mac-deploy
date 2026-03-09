@@ -4,7 +4,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.mac-deploy.pf</string>
+  <string>com.mac-security.pf</string>
   <key>ProgramArguments</key>
   <array>
     <string>/sbin/pfctl</string>
@@ -14,6 +14,6 @@
   <key>RunAtLoad</key>
   <true/>
   <key>StandardErrorPath</key>
-  <string>/var/log/mac-deploy-pf.log</string>
+  <string>/var/log/mac-security-pf.log</string>
 </dict>
 </plist>

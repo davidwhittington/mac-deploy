@@ -2,7 +2,7 @@
 
 Running the security audit manually tells you the state of a machine right now. Scheduling it tells you when something changes. This guide turns the audit script into an active monitoring layer — running on a schedule, diffing against the last known-good report, and flagging drift automatically.
 
-**Applies to:** macOS Ventura / Sonoma / Sequoia / Tahoe · requires mac-deploy repo cloned on each machine
+**Applies to:** macOS Ventura / Sonoma / Sequoia / Tahoe · requires mac-security repo cloned on each machine
 
 ---
 
@@ -41,11 +41,11 @@ The script runs the audit, saves the report to `private/workstations/`, diffs it
 
 LaunchAgents run as your user. LaunchDaemons run as root. For reading security state (FileVault, Gatekeeper, firewall), a LaunchAgent is sufficient — the audit script is designed to work without sudo.
 
-The plist is stored in the repo at `config/launchagents/com.mac-deploy.security-audit.plist`. Deploy it with:
+The plist is stored in the repo at `config/launchagents/com.mac-security.security-audit.plist`. Deploy it with:
 
 ```bash
 mkdir -p ~/Library/LaunchAgents
-cp config/launchagents/com.mac-deploy.security-audit.plist ~/Library/LaunchAgents/
+cp config/launchagents/com.mac-security.security-audit.plist ~/Library/LaunchAgents/
 ```
 
 > The plist references `REPO_PATH/scripts/audit/scheduled-audit.sh`. Edit that string to match your actual repo location before loading.
@@ -53,10 +53,10 @@ cp config/launchagents/com.mac-deploy.security-audit.plist ~/Library/LaunchAgent
 Load it:
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist
+launchctl load ~/Library/LaunchAgents/com.mac-security.security-audit.plist
 
 # Verify it's loaded
-launchctl list | grep mac-deploy
+launchctl list | grep mac-security
 ```
 
 ---
@@ -65,10 +65,10 @@ launchctl list | grep mac-deploy
 
 ```bash
 # Trigger a run now without waiting for the schedule
-launchctl start com.mac-deploy.security-audit
+launchctl start com.mac-security.security-audit
 
 # Watch the drift log
-tail -f ~/Documents/projects/mac-deploy/private/workstations/$(hostname -s)-drift.log
+tail -f ~/Documents/projects/mac-security/private/workstations/$(hostname -s)-drift.log
 ```
 
 ---
@@ -96,8 +96,8 @@ Change the `StartCalendarInterval` in the plist to suit your preference:
 After editing the plist, reload it:
 
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist
-launchctl load ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist
+launchctl unload ~/Library/LaunchAgents/com.mac-security.security-audit.plist
+launchctl load ~/Library/LaunchAgents/com.mac-security.security-audit.plist
 ```
 
 ---
@@ -107,7 +107,7 @@ launchctl load ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist
 Reports accumulate in `private/workstations/`. Commit them periodically to build a dated audit trail:
 
 ```bash
-cd ~/Documents/projects/mac-deploy/private
+cd ~/Documents/projects/mac-security/private
 git add workstations/
 git commit -m "audit: $(hostname -s) scheduled reports $(date +%Y-%m)"
 git push
@@ -148,13 +148,13 @@ For full port-level drift detection, extend `extract_posture()` to also capture 
 The script writes to the system log via `logger`. To see drift alerts:
 
 1. Open **Console.app**
-2. Search for `mac-deploy-audit` in the search bar
+2. Search for `mac-security-audit` in the search bar
 3. Filter by **Any** to see all severity levels
 
 Or from the terminal:
 
 ```bash
-log show --predicate 'senderImagePath contains "logger"' --info --last 7d | grep mac-deploy
+log show --predicate 'senderImagePath contains "logger"' --info --last 7d | grep mac-security
 ```
 
 ---
@@ -163,7 +163,7 @@ log show --predicate 'senderImagePath contains "logger"' --info --last 7d | grep
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| Agent not running after reboot | Plist not loaded | `launchctl load ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist` |
+| Agent not running after reboot | Plist not loaded | `launchctl load ~/Library/LaunchAgents/com.mac-security.security-audit.plist` |
 | No output / empty log | Script path wrong in plist | Verify path matches repo location |
 | `private/workstations/` not found | Submodule not initialized | `git submodule update --init` in repo root |
 | Drift detected on every run | `extract_posture` matching something that changes daily | Adjust the grep pattern to exclude dynamic content |

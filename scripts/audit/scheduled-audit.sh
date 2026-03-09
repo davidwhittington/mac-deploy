@@ -61,4 +61,4 @@ echo "" | tee -a "$DRIFT_LOG"
 echo "[$(date)] Full diff: diff '$PREV_REPORT' '$REPORT'" | tee -a "$DRIFT_LOG"
 
 # Write to macOS system log so it appears in Console.app
-/usr/bin/logger -t "mac-deploy-audit" "SECURITY DRIFT on $HOSTNAME — check $DRIFT_LOG"
+/usr/bin/logger -t "mac-security-audit" "SECURITY DRIFT on $HOSTNAME — check $DRIFT_LOG"

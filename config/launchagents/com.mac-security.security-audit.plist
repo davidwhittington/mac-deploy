@@ -4,7 +4,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.mac-deploy.security-audit</string>
+  <string>com.mac-security.security-audit</string>
 
   <key>ProgramArguments</key>
   <array>
@@ -22,10 +22,10 @@
   </dict>
 
   <key>StandardOutPath</key>
-  <string>/tmp/mac-deploy-audit.log</string>
+  <string>/tmp/mac-security-audit.log</string>
 
   <key>StandardErrorPath</key>
-  <string>/tmp/mac-deploy-audit-error.log</string>
+  <string>/tmp/mac-security-audit-error.log</string>
 
   <key>RunAtLoad</key>
   <false/>

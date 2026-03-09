@@ -67,8 +67,8 @@ if $DRY_RUN; then
   echo "  - Enable Application Firewall"
   echo "  - Enable stealth mode"
   if $WITH_PF; then
-    echo "  - Write /etc/pf.anchors/mac-deploy (allow port 22, block all other inbound)"
-    echo "  - Add mac-deploy anchor reference to /etc/pf.conf"
+    echo "  - Write /etc/pf.anchors/mac-security (allow port 22, block all other inbound)"
+    echo "  - Add mac-security anchor reference to /etc/pf.conf"
     echo "  - Load pf and enable"
   fi
   echo
@@ -96,7 +96,7 @@ if $WITH_PF; then
   echo "    We add a named anchor so your rules are isolated from the system base config."
 
   ANCHOR_DIR="/etc/pf.anchors"
-  ANCHOR_FILE="$ANCHOR_DIR/mac-deploy"
+  ANCHOR_FILE="$ANCHOR_DIR/mac-security"
 
   mkdir -p "$ANCHOR_DIR"
 
@@ -108,9 +108,9 @@ if $WITH_PF; then
   echo "    Active interface: $IFACE"
 
   printf '%s\n' \
-    '# mac-deploy pf anchor' \
+    '# mac-security pf anchor' \
     '# Applied by scripts/enable-stealth-firewall.sh' \
-    '# https://github.com/davidwhittington/mac-deploy' \
+    '# https://github.com/davidwhittington/mac-security' \
     '' \
     "# Allow established return traffic on $IFACE" \
     "pass in quick on $IFACE proto tcp from any to any flags S/SA keep state" \
@@ -128,12 +128,12 @@ if $WITH_PF; then
   echo "    Written: $ANCHOR_FILE"
 
   # Add anchor reference to /etc/pf.conf if not already present
-  if ! grep -q 'anchor "mac-deploy"' /etc/pf.conf 2>/dev/null; then
-    printf '\nanchor "mac-deploy"\nload anchor "mac-deploy" from "/etc/pf.anchors/mac-deploy"\n' \
+  if ! grep -q 'anchor "mac-security"' /etc/pf.conf 2>/dev/null; then
+    printf '\nanchor "mac-security"\nload anchor "mac-security" from "/etc/pf.anchors/mac-security"\n' \
       >> /etc/pf.conf
     echo "    Updated: /etc/pf.conf"
   else
-    echo "    /etc/pf.conf already references mac-deploy anchor — skipping."
+    echo "    /etc/pf.conf already references mac-security anchor — skipping."
   fi
 
   # Load rules and enable pf
@@ -144,8 +144,8 @@ if $WITH_PF; then
   # Deploy LaunchDaemon for persistence if the plist is in the repo
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-  PLIST_SRC="$REPO_ROOT/config/launchdaemons/com.mac-deploy.pf.plist"
-  PLIST_DEST="/Library/LaunchDaemons/com.mac-deploy.pf.plist"
+  PLIST_SRC="$REPO_ROOT/config/launchdaemons/com.mac-security.pf.plist"
+  PLIST_DEST="/Library/LaunchDaemons/com.mac-security.pf.plist"
 
   if [[ -f "$PLIST_SRC" ]] && [[ ! -f "$PLIST_DEST" ]]; then
     cp "$PLIST_SRC" "$PLIST_DEST"

@@ -1,4 +1,4 @@
-# mac-deploy
+# mac-security
 
 A personal toolkit for deploying, standardizing, and auditing macOS workstations across lab environments. Scripts to capture and restore full machine environments, security posture auditing with markdown output, and shell configuration symmetry across machines.
 
@@ -6,7 +6,7 @@ Designed to be **repeatable and auditable** - run the audit script on any machin
 
 **Tested on:** macOS Sequoia / Tahoe · Apple Silicon (M-series) · zsh
 
-**Website:** [davidwhittington.github.io/mac-deploy](https://davidwhittington.github.io/mac-deploy)
+**Website:** [davidwhittington.github.io/mac-security](https://davidwhittington.github.io/mac-security)
 
 ---
 
@@ -33,7 +33,7 @@ The goal is a standardized baseline: repeatable deployment, consistent shell env
 ## Repository Structure
 
 ```
-mac-deploy/
+mac-security/
 ├── docs/
 │   ├── guides/           # Technical how-to articles
 │   ├── security/         # Security baseline and policy
@@ -60,32 +60,32 @@ mac-deploy/
 Install the hardening tools on any Mac in seconds:
 
 ```bash
-brew tap davidwhittington/mac-deploy
-brew install mac-deploy
+brew tap davidwhittington/mac-security
+brew install mac-security
 
 # Interactive bootstrap — audit + harden in one run
-sudo mac-deploy-first-run
+sudo mac-security-first-run
 
 # Or step by step
-mac-deploy-audit --brief
-sudo mac-deploy-harden-ssh
-sudo mac-deploy-firewall
+mac-security-audit --brief
+sudo mac-security-harden-ssh
+sudo mac-security-firewall
 ```
 
 | Command | What it does |
 |---------|-------------|
-| `mac-deploy-audit` | Full security posture audit — outputs structured Markdown |
-| `mac-deploy-harden-ssh` | Write SSH hardening config, validate, reload sshd |
-| `mac-deploy-firewall` | Enable Application Firewall and stealth mode |
-| `mac-deploy-first-run` | Interactive bootstrap: Homebrew, audit, hardening, re-audit |
-| `mac-deploy-capture` | Snapshot Homebrew packages and shell config |
-| `mac-deploy-deploy` | Restore a saved machine profile to a new Mac |
+| `mac-security-audit` | Full security posture audit — outputs structured Markdown |
+| `mac-security-harden-ssh` | Write SSH hardening config, validate, reload sshd |
+| `mac-security-firewall` | Enable Application Firewall and stealth mode |
+| `mac-security-first-run` | Interactive bootstrap: Homebrew, audit, hardening, re-audit |
+| `mac-security-capture` | Snapshot Homebrew packages and shell config |
+| `mac-security-deploy` | Restore a saved machine profile to a new Mac |
 
 ### Option B — Clone the repo (full workflow with audit history)
 
 ```bash
-git clone https://github.com/davidwhittington/mac-deploy.git
-cd mac-deploy
+git clone https://github.com/davidwhittington/mac-security.git
+cd mac-security
 git submodule update --init --recursive   # pulls private/ if you have access
 
 # Print report to stdout
@@ -152,7 +152,7 @@ Per-machine audit reports (with real hostnames, IPs, and findings) are stored in
 Generic scripts and templates live here (public). Machine-specific data - actual audit reports, captured package profiles, network topology - lives in a companion private repo mounted as a git submodule at `private/`.
 
 ```
-mac-deploy/          ← public: scripts, templates, guides
+mac-security/          ← public: scripts, templates, guides
 └── private/         ← private submodule: per-machine data
     ├── workstations/    audit reports
     └── machines/        captured pkg profiles
@@ -161,9 +161,9 @@ mac-deploy/          ← public: scripts, templates, guides
 To adopt this pattern for your own infrastructure:
 
 ```bash
-gh repo fork davidwhittington/mac-deploy
-gh repo create mac-deploy-private --private
-git submodule add https://github.com/<you>/mac-deploy-private private/
+gh repo fork davidwhittington/mac-security
+gh repo create mac-security-private --private
+git submodule add https://github.com/<you>/mac-security-private private/
 git commit -m "Add private submodule"
 ```
 

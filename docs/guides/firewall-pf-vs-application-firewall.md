@@ -79,7 +79,7 @@ The system base config is at `/etc/pf.conf`. Anchors live in `/etc/pf.anchors/`.
 
 ```bash
 printf '%s\n' \
-  '# mac-deploy pf anchor' \
+  '# mac-security pf anchor' \
   '# Inbound rules — block all, then allow specific ports' \
   '' \
   '# Allow established connections (return traffic)' \
@@ -93,7 +93,7 @@ printf '%s\n' \
   '' \
   '# Allow all outbound' \
   'pass out all keep state' \
-  | sudo tee /etc/pf.anchors/mac-deploy
+  | sudo tee /etc/pf.anchors/mac-security
 ```
 
 > Replace `en0` with your active interface. Check with: `networksetup -listallhardwareports | grep -A1 "Wi-Fi\|Ethernet"`
@@ -108,8 +108,8 @@ cat /etc/pf.conf
 Add these lines (edit with sudo):
 
 ```
-anchor "mac-deploy"
-load anchor "mac-deploy" from "/etc/pf.anchors/mac-deploy"
+anchor "mac-security"
+load anchor "mac-security" from "/etc/pf.anchors/mac-security"
 ```
 
 **3. Load and test:**
@@ -134,11 +134,11 @@ sudo pfctl -s rules
 
 ### Making pf persist across reboots
 
-pf rules don't survive a reboot without a LaunchDaemon. The plist is stored in the repo at `config/launchdaemons/com.mac-deploy.pf.plist`. Deploy it with:
+pf rules don't survive a reboot without a LaunchDaemon. The plist is stored in the repo at `config/launchdaemons/com.mac-security.pf.plist`. Deploy it with:
 
 ```bash
-sudo cp config/launchdaemons/com.mac-deploy.pf.plist /Library/LaunchDaemons/
-sudo launchctl load /Library/LaunchDaemons/com.mac-deploy.pf.plist
+sudo cp config/launchdaemons/com.mac-security.pf.plist /Library/LaunchDaemons/
+sudo launchctl load /Library/LaunchDaemons/com.mac-security.pf.plist
 ```
 
 Verify after next reboot:
@@ -158,7 +158,7 @@ For a machine that needs SSH accessible but otherwise hardened:
 | Application Firewall | Enabled | System Settings or socketfilterfw |
 | Stealth mode | Enabled | `--setstealthmode on` |
 | Block-all | **Off** | Use pf instead |
-| pf | Enabled with anchor | `/etc/pf.anchors/mac-deploy` |
+| pf | Enabled with anchor | `/etc/pf.anchors/mac-security` |
 | SSH via pf | Allowed on port 22 | Anchor rule |
 | All other inbound | Blocked via pf | Anchor default block |
 

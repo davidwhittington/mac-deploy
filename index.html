@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mac-deploy — macOS Security Hardening</title>
+  <title>mac-security — macOS Security Hardening</title>
   <style>
     :root {
       --bg: #0d1117;
@@ -271,11 +271,11 @@
 <body>
 
 <nav>
-  <span class="nav-brand">mac-deploy</span>
+  <span class="nav-brand">mac-security</span>
   <div class="nav-links">
-    <a href="https://github.com/davidwhittington/mac-deploy">GitHub</a>
-    <a href="https://github.com/davidwhittington/mac-deploy/tree/main/docs/guides">Guides</a>
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/CHANGELOG.md">Changelog</a>
+    <a href="https://github.com/davidwhittington/mac-security">GitHub</a>
+    <a href="https://github.com/davidwhittington/mac-security/tree/main/docs/guides">Guides</a>
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a>
   </div>
 </nav>
 
@@ -283,7 +283,7 @@
   <div class="hero-badge">macOS Security Tooling</div>
   <h1>Harden your Mac.<br><span>In minutes, not hours.</span></h1>
   <p class="hero-sub">
-    mac-deploy is an open-source toolkit for auditing and hardening macOS workstations.
+    mac-security is an open-source toolkit for auditing and hardening macOS workstations.
     One command gives you a full security report. Another locks down your SSH, firewall,
     and sharing services to a defensible baseline.
   </p>
@@ -301,8 +301,8 @@
 
   <div class="install-block">
     <div class="install-label">Install via Homebrew</div>
-    <pre>brew tap davidwhittington/mac-deploy
-brew install mac-deploy</pre>
+    <pre>brew tap davidwhittington/mac-security
+brew install mac-security</pre>
     <div class="install-note">
       Or clone the repo for the full audit + documentation workflow.<br>
       macOS Ventura / Sonoma / Sequoia / Tahoe &middot; Apple Silicon and Intel
@@ -312,7 +312,7 @@ brew install mac-deploy</pre>
 
 <section>
   <h2>What it audits</h2>
-  <p>Run <code style="color:var(--green);font-family:monospace">mac-deploy-audit</code> and get a structured Markdown report covering every major security control on your machine.</p>
+  <p>Run <code style="color:var(--green);font-family:monospace">mac-security-audit</code> and get a structured Markdown report covering every major security control on your machine.</p>
   <div class="checks-grid">
     <div class="check-card">
       <div class="check-icon">🔐</div>
@@ -362,23 +362,23 @@ brew install mac-deploy</pre>
   <p>Three tools ship with the Homebrew formula.</p>
   <div class="cmd-list">
     <div class="cmd-row">
-      <span class="cmd-name">mac-deploy-audit</span>
+      <span class="cmd-name">mac-security-audit</span>
       <span class="cmd-desc">Full security posture audit — outputs a structured Markdown report to stdout</span>
     </div>
     <div class="cmd-row">
-      <span class="cmd-name">mac-deploy-audit --brief</span>
+      <span class="cmd-name">mac-security-audit --brief</span>
       <span class="cmd-desc">Audit without package lists — faster, good for scheduled runs</span>
     </div>
     <div class="cmd-row">
-      <span class="cmd-name">mac-deploy-audit --save</span>
+      <span class="cmd-name">mac-security-audit --save</span>
       <span class="cmd-desc">Write the report to <code>private/workstations/</code> for audit history tracking</span>
     </div>
     <div class="cmd-row">
-      <span class="cmd-name">mac-deploy-capture</span>
+      <span class="cmd-name">mac-security-capture</span>
       <span class="cmd-desc">Snapshot Homebrew packages, shell config, and git config from the current machine</span>
     </div>
     <div class="cmd-row">
-      <span class="cmd-name">mac-deploy-deploy</span>
+      <span class="cmd-name">mac-security-deploy</span>
       <span class="cmd-desc">Restore a saved machine profile to a new or rebuilt Mac</span>
     </div>
   </div>
@@ -388,11 +388,11 @@ brew install mac-deploy</pre>
   <h2>Quick start</h2>
   <p>From zero to a hardened baseline in under five minutes.</p>
   <div class="code-block"><pre><span class="comment"># 1. Install the tools</span>
-<span class="cmd">brew tap</span> davidwhittington/mac-deploy
-<span class="cmd">brew install</span> mac-deploy
+<span class="cmd">brew tap</span> davidwhittington/mac-security
+<span class="cmd">brew install</span> mac-security
 
 <span class="comment"># 2. Run your first audit</span>
-<span class="cmd">mac-deploy-audit</span> <span class="flag">--brief</span>
+<span class="cmd">mac-security-audit</span> <span class="flag">--brief</span>
 
 <span class="comment"># 3. Review the Findings Summary at the bottom of the report</span>
 <span class="comment">#    Each finding includes a severity and a recommended fix.</span>
@@ -406,7 +406,7 @@ printf <span class="flag">'%s\n'</span> \
   | sudo tee /etc/ssh/sshd_config.d/099-hardening.conf
 
 <span class="comment"># 5. Re-run the audit to confirm findings are resolved</span>
-<span class="cmd">mac-deploy-audit</span> <span class="flag">--brief</span></pre>
+<span class="cmd">mac-security-audit</span> <span class="flag">--brief</span></pre>
   </div>
 </section>
 
@@ -414,23 +414,23 @@ printf <span class="flag">'%s\n'</span> \
   <h2>Guides</h2>
   <p>Step-by-step documentation for every part of the hardening process.</p>
   <div class="guides-list">
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/ssh-pubkey-auth.md" class="guide-card">
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/docs/guides/ssh-pubkey-auth.md" class="guide-card">
       <h3>SSH Public Key Authentication</h3>
       <p>Key generation, authorized_keys setup, sshd hardening, multi-machine deployment.</p>
     </a>
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/firewall-pf-vs-application-firewall.md" class="guide-card">
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/docs/guides/firewall-pf-vs-application-firewall.md" class="guide-card">
       <h3>Firewall: Application Firewall vs pf</h3>
       <p>When block-all breaks SSH, and how pf gives you both.</p>
     </a>
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/ssh-fleet-key-management.md" class="guide-card">
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/docs/guides/ssh-fleet-key-management.md" class="guide-card">
       <h3>SSH Fleet Key Management</h3>
       <p>Per-client key strategy, ~/.ssh/config host blocks, key rotation across a lab.</p>
     </a>
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/automated-security-drift-detection.md" class="guide-card">
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/docs/guides/automated-security-drift-detection.md" class="guide-card">
       <h3>Automated Drift Detection</h3>
       <p>launchd-scheduled audits that diff against the last report and alert on change.</p>
     </a>
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/removing-insecure-services.md" class="guide-card">
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/docs/guides/removing-insecure-services.md" class="guide-card">
       <h3>Removing Insecure Services</h3>
       <p>Disable ARD, Screen Sharing, File Sharing, Internet Sharing, AirDrop step by step.</p>
     </a>
@@ -441,18 +441,18 @@ printf <span class="flag">'%s\n'</span> \
   <h2>Private data, public tools</h2>
   <p>
     Audit reports, machine profiles, and network diagrams contain sensitive data that
-    shouldn't live in a public repo. mac-deploy uses a git submodule pattern to keep
+    shouldn't live in a public repo. mac-security uses a git submodule pattern to keep
     the tooling public and the data private:
   </p>
   <div class="code-block"><pre><span class="comment"># Public repo — scripts, guides, config templates</span>
-mac-deploy/
+mac-security/
   scripts/audit/security-audit.sh
   docs/guides/
   config/launchagents/
   config/launchdaemons/
 
 <span class="comment"># Private submodule — per-machine data (separate private repo)</span>
-mac-deploy/private/
+mac-security/private/
   workstations/macbook-pro-2026-03-08.md
   machines/macbook-pro/Brewfile</pre>
   </div>
@@ -464,10 +464,10 @@ mac-deploy/private/
 
 <footer>
   <p>
-    <a href="https://github.com/davidwhittington/mac-deploy">mac-deploy</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-security">mac-security</a> &middot;
     MIT License &middot;
-    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/CHANGELOG.md">Changelog</a> &middot;
-    <a href="https://github.com/davidwhittington/mac-deploy/issues">Issues</a>
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-security/issues">Issues</a>
   </p>
 </footer>
 

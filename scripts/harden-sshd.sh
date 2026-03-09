@@ -47,9 +47,9 @@ echo
 # ── config content ────────────────────────────────────────────────────────────
 
 CONF_CONTENT=$(printf '%s\n' \
-  '# mac-deploy SSH hardening' \
+  '# mac-security SSH hardening' \
   '# Applied by scripts/harden-sshd.sh' \
-  '# https://github.com/davidwhittington/mac-deploy' \
+  '# https://github.com/davidwhittington/mac-security' \
   '' \
   'PasswordAuthentication no' \
   'PermitRootLogin no' \

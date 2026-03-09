@@ -1,11 +1,24 @@
 # Changelog
 
-All notable changes to mac-deploy are documented here.
+All notable changes to mac-security are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.8.0] - 2026-03-09
+
+### Changed
+- **Project renamed from `mac-security` to `mac-security`** — better reflects the security-first focus of the toolkit (hardening, auditing, config management, and future virtualization). This is a breaking change for existing Homebrew users: `brew upgrade mac-security` will install new command names.
+- All commands renamed: `mac-security-*` → `mac-security-*` (13 commands)
+- Homebrew tap renamed: `davidwhittington/mac-security` → `davidwhittington/mac-security` (tap repo: `homebrew-mac-security`)
+- Plist identifiers updated: `com.mac-security.*` → `com.mac-security.*`
+- pf anchor renamed: `/etc/pf.anchors/mac-security` → `/etc/pf.anchors/mac-security`
+- Output paths updated: `~/.zshrc-mac-security` → `~/.zshrc-mac-security`; temp and log paths
+- Private submodule repo renamed: `mac-security-private` → `mac-security-private`
 
 ---
 
@@ -43,9 +56,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - `scripts/harden-sshd.sh` — applies SSH hardening config to `/etc/ssh/sshd_config.d/099-hardening.conf`; validates with `sshd -t`, reloads sshd if active; supports `--dry-run`
 - `scripts/enable-stealth-firewall.sh` — enables Application Firewall and stealth mode; `--with-pf` configures a pf anchor (allow port 22, block all other inbound) with LaunchDaemon persistence; supports `--dry-run`
-- `scripts/first-run.sh` — interactive bootstrap for a new Mac: installs Homebrew, taps mac-deploy, runs audit, applies SSH and firewall hardening, re-audits to confirm baseline; supports `--auto` and `--audit-only`
+- `scripts/first-run.sh` — interactive bootstrap for a new Mac: installs Homebrew, taps mac-security, runs audit, applies SSH and firewall hardening, re-audits to confirm baseline; supports `--auto` and `--audit-only`
 - GitHub Pages landing page (`index.html`) — dark-themed intro with quick start, feature overview, commands, and guide links
-- Homebrew tap (`davidwhittington/homebrew-mac-deploy`) — `brew tap davidwhittington/mac-deploy && brew install mac-deploy` installs all six commands
+- Homebrew tap (`davidwhittington/homebrew-mac-security`) — `brew tap davidwhittington/mac-security && brew install mac-security` installs all six commands
 
 ### Changed
 - `README.md` — Homebrew tap as primary install method; command table; link to website
@@ -103,5 +116,5 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `pkgs/capture.sh` — snapshot Homebrew packages, shell config, git config, SSH key list, macOS defaults from current machine
 - `pkgs/deploy.sh` — restore a saved machine profile: Homebrew via Brewfile, shell config, git config
 - `pkgs/Brewfile.base` — shared baseline Homebrew packages for all lab machines
-- `private/` — git submodule pointing to `mac-deploy-private` (private companion repo for per-machine data)
+- `private/` — git submodule pointing to `mac-security-private` (private companion repo for per-machine data)
 - `.gitignore`
