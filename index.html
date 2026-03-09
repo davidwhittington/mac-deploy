@@ -185,6 +185,23 @@
     .code-block pre .cmd { color: var(--green); }
     .code-block pre .flag { color: var(--accent); }
 
+    /* Warning banner */
+    .warning-banner {
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      background: rgba(210, 153, 34, 0.08);
+      border: 1px solid rgba(210, 153, 34, 0.4);
+      border-radius: 0.6rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      text-align: left;
+    }
+    .warning-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .warning-text { font-size: 0.85rem; color: var(--muted); line-height: 1.55; }
+    .warning-text strong { color: #d29922; }
+
     /* Guides */
     .guides-list {
       display: grid;
@@ -241,6 +258,17 @@
     One command gives you a full security report. Another locks down your SSH, firewall,
     and sharing services to a defensible baseline.
   </p>
+
+  <div class="warning-banner">
+    <span class="warning-icon">⚠️</span>
+    <span class="warning-text">
+      <strong>Test before you deploy.</strong>
+      These scripts modify SSH configuration, firewall rules, and system security settings.
+      Always validate in a non-production or development environment before applying to
+      production machines. Review each script and understand what it does before running it
+      with elevated privileges.
+    </span>
+  </div>
 
   <div class="install-block">
     <div class="install-label">Install via Homebrew</div>
