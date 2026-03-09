@@ -90,6 +90,7 @@
       max-width: 540px;
       margin: 0 auto 3.5rem;
       text-align: left;
+      position: relative;
     }
     .install-label {
       font-size: 0.75rem;
@@ -174,6 +175,7 @@
       padding: 1.25rem 1.5rem;
       margin: 1.25rem 0;
       overflow-x: auto;
+      position: relative;
     }
     .code-block pre {
       font-family: "SF Mono", "Fira Code", monospace;
@@ -184,6 +186,33 @@
     .code-block pre .comment { color: var(--muted); }
     .code-block pre .cmd { color: var(--green); }
     .code-block pre .flag { color: var(--accent); }
+
+    /* Copy button */
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      line-height: 1.6;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+      background: var(--border);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green);
+    }
 
     /* Warning banner */
     .warning-banner {
@@ -441,6 +470,65 @@ mac-deploy/private/
     <a href="https://github.com/davidwhittington/mac-deploy/issues">Issues</a>
   </p>
 </footer>
+
+<script>
+  function addCopyButton(container, getTextFn) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    container.appendChild(btn);
+
+    btn.addEventListener('click', function () {
+      var text = getTextFn();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          showCopied(btn);
+        }).catch(function () {
+          fallbackCopy(text, btn);
+        });
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  }
+
+  function showCopied(btn) {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(function () {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); showCopied(btn); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // Attach to all .code-block elements
+  document.querySelectorAll('.code-block').forEach(function (block) {
+    var pre = block.querySelector('pre');
+    addCopyButton(block, function () {
+      return (pre.innerText || pre.textContent).trim();
+    });
+  });
+
+  // Attach to the hero install block
+  var installBlock = document.querySelector('.install-block');
+  if (installBlock) {
+    var pre = installBlock.querySelector('pre');
+    addCopyButton(installBlock, function () {
+      return (pre.innerText || pre.textContent).trim();
+    });
+  }
+</script>
 
 </body>
 </html>
