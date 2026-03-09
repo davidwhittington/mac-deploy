@@ -61,7 +61,7 @@ Install the hardening tools on any Mac in seconds:
 
 ```bash
 brew tap davidwhittington/mac-security
-brew install mac-security
+brew install davidwhittington/mac-security/mac-security
 
 # Interactive bootstrap — audit + harden in one run
 sudo mac-security-first-run

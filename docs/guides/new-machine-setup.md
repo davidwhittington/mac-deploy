@@ -89,7 +89,7 @@ brew --version
 
 ```bash
 brew tap davidwhittington/mac-security
-brew install mac-security
+brew install davidwhittington/mac-security/mac-security
 ```
 
 This installs all mac-security tools on your PATH:
