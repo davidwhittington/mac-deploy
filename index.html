@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mac-deploy — macOS Security Hardening</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --code-bg: #1f2937;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Nav */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      max-width: 860px;
+      margin: 5rem auto 3rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* Quick install */
+    .install-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem 2rem;
+      max-width: 540px;
+      margin: 0 auto 3.5rem;
+      text-align: left;
+    }
+    .install-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .install-block pre {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.9rem;
+      color: var(--green);
+      white-space: pre;
+    }
+    .install-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    /* Section */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    p { color: var(--muted); margin-bottom: 1rem; }
+
+    /* What it checks grid */
+    .checks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .check-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem 1.2rem;
+    }
+    .check-icon { font-size: 1.25rem; margin-bottom: 0.4rem; }
+    .check-card h3 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .check-card p { font-size: 0.82rem; margin: 0; }
+
+    /* Commands */
+    .cmd-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.25rem; }
+    .cmd-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+    }
+    .cmd-name {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.85rem;
+      color: var(--green);
+      white-space: nowrap;
+      min-width: 210px;
+    }
+    .cmd-desc { font-size: 0.85rem; color: var(--muted); }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .code-block pre .comment { color: var(--muted); }
+    .code-block pre .cmd { color: var(--green); }
+    .code-block pre .flag { color: var(--accent); }
+
+    /* Guides */
+    .guides-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .guide-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem 1.2rem;
+      transition: border-color 0.15s;
+    }
+    .guide-card:hover { border-color: var(--accent); }
+    .guide-card h3 { font-size: 0.9rem; margin-bottom: 0.3rem; }
+    .guide-card p { font-size: 0.82rem; margin: 0; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .cmd-row { flex-direction: column; gap: 0.3rem; }
+      .cmd-name { min-width: unset; }
+      nav { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">mac-deploy</span>
+  <div class="nav-links">
+    <a href="https://github.com/davidwhittington/mac-deploy">GitHub</a>
+    <a href="https://github.com/davidwhittington/mac-deploy/tree/main/docs/guides">Guides</a>
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">macOS Security Tooling</div>
+  <h1>Harden your Mac.<br><span>In minutes, not hours.</span></h1>
+  <p class="hero-sub">
+    mac-deploy is an open-source toolkit for auditing and hardening macOS workstations.
+    One command gives you a full security report. Another locks down your SSH, firewall,
+    and sharing services to a defensible baseline.
+  </p>
+
+  <div class="install-block">
+    <div class="install-label">Install via Homebrew</div>
+    <pre>brew tap davidwhittington/mac-deploy
+brew install mac-deploy</pre>
+    <div class="install-note">
+      Or clone the repo for the full audit + documentation workflow.<br>
+      macOS Ventura / Sonoma / Sequoia / Tahoe &middot; Apple Silicon and Intel
+    </div>
+  </div>
+</div>
+
+<section>
+  <h2>What it audits</h2>
+  <p>Run <code style="color:var(--green);font-family:monospace">mac-deploy-audit</code> and get a structured Markdown report covering every major security control on your machine.</p>
+  <div class="checks-grid">
+    <div class="check-card">
+      <div class="check-icon">🔐</div>
+      <h3>FileVault</h3>
+      <p>Confirms disk encryption is on. Flags unencrypted machines as critical.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">🛡️</div>
+      <h3>SIP &amp; Gatekeeper</h3>
+      <p>System Integrity Protection and app signing enforcement status.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">🔥</div>
+      <h3>Application Firewall</h3>
+      <p>Firewall state, stealth mode, and block-all setting.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">🔑</div>
+      <h3>SSH Configuration</h3>
+      <p>Reads sshd_config.d drop-ins. Reports password auth, root login, key auth.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">📡</div>
+      <h3>Sharing Services</h3>
+      <p>Remote Login, ARD, Screen Sharing, File Sharing, Internet Sharing.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">🌐</div>
+      <h3>Open Ports</h3>
+      <p>All TCP listeners. Spot unexpected services before attackers do.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">👤</div>
+      <h3>User Accounts</h3>
+      <p>Local users and admin group membership.</p>
+    </div>
+    <div class="check-card">
+      <div class="check-icon">🔄</div>
+      <h3>macOS Updates</h3>
+      <p>Auto-check, auto-download, and security data install policy.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Commands</h2>
+  <p>Three tools ship with the Homebrew formula.</p>
+  <div class="cmd-list">
+    <div class="cmd-row">
+      <span class="cmd-name">mac-deploy-audit</span>
+      <span class="cmd-desc">Full security posture audit — outputs a structured Markdown report to stdout</span>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-name">mac-deploy-audit --brief</span>
+      <span class="cmd-desc">Audit without package lists — faster, good for scheduled runs</span>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-name">mac-deploy-audit --save</span>
+      <span class="cmd-desc">Write the report to <code>private/workstations/</code> for audit history tracking</span>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-name">mac-deploy-capture</span>
+      <span class="cmd-desc">Snapshot Homebrew packages, shell config, and git config from the current machine</span>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-name">mac-deploy-deploy</span>
+      <span class="cmd-desc">Restore a saved machine profile to a new or rebuilt Mac</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Quick start</h2>
+  <p>From zero to a hardened baseline in under five minutes.</p>
+  <div class="code-block"><pre><span class="comment"># 1. Install the tools</span>
+<span class="cmd">brew tap</span> davidwhittington/mac-deploy
+<span class="cmd">brew install</span> mac-deploy
+
+<span class="comment"># 2. Run your first audit</span>
+<span class="cmd">mac-deploy-audit</span> <span class="flag">--brief</span>
+
+<span class="comment"># 3. Review the Findings Summary at the bottom of the report</span>
+<span class="comment">#    Each finding includes a severity and a recommended fix.</span>
+
+<span class="comment"># 4. Harden SSH (see the SSH guide for the full walkthrough)</span>
+printf <span class="flag">'%s\n'</span> \
+  <span class="flag">'PasswordAuthentication no'</span> \
+  <span class="flag">'PermitRootLogin no'</span> \
+  <span class="flag">'PubkeyAuthentication yes'</span> \
+  <span class="flag">'MaxAuthTries 3'</span> \
+  | sudo tee /etc/ssh/sshd_config.d/099-hardening.conf
+
+<span class="comment"># 5. Re-run the audit to confirm findings are resolved</span>
+<span class="cmd">mac-deploy-audit</span> <span class="flag">--brief</span></pre>
+  </div>
+</section>
+
+<section>
+  <h2>Guides</h2>
+  <p>Step-by-step documentation for every part of the hardening process.</p>
+  <div class="guides-list">
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/ssh-pubkey-auth.md" class="guide-card">
+      <h3>SSH Public Key Authentication</h3>
+      <p>Key generation, authorized_keys setup, sshd hardening, multi-machine deployment.</p>
+    </a>
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/firewall-pf-vs-application-firewall.md" class="guide-card">
+      <h3>Firewall: Application Firewall vs pf</h3>
+      <p>When block-all breaks SSH, and how pf gives you both.</p>
+    </a>
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/ssh-fleet-key-management.md" class="guide-card">
+      <h3>SSH Fleet Key Management</h3>
+      <p>Per-client key strategy, ~/.ssh/config host blocks, key rotation across a lab.</p>
+    </a>
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/automated-security-drift-detection.md" class="guide-card">
+      <h3>Automated Drift Detection</h3>
+      <p>launchd-scheduled audits that diff against the last report and alert on change.</p>
+    </a>
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/docs/guides/removing-insecure-services.md" class="guide-card">
+      <h3>Removing Insecure Services</h3>
+      <p>Disable ARD, Screen Sharing, File Sharing, Internet Sharing, AirDrop step by step.</p>
+    </a>
+  </div>
+</section>
+
+<section>
+  <h2>Private data, public tools</h2>
+  <p>
+    Audit reports, machine profiles, and network diagrams contain sensitive data that
+    shouldn't live in a public repo. mac-deploy uses a git submodule pattern to keep
+    the tooling public and the data private:
+  </p>
+  <div class="code-block"><pre><span class="comment"># Public repo — scripts, guides, config templates</span>
+mac-deploy/
+  scripts/audit/security-audit.sh
+  docs/guides/
+  config/launchagents/
+  config/launchdaemons/
+
+<span class="comment"># Private submodule — per-machine data (separate private repo)</span>
+mac-deploy/private/
+  workstations/macbook-pro-2026-03-08.md
+  machines/macbook-pro/Brewfile</pre>
+  </div>
+  <p>
+    Clone the repo, initialize the private submodule pointing at your own private repo,
+    and your audit history stays yours.
+  </p>
+</section>
+
+<footer>
+  <p>
+    <a href="https://github.com/davidwhittington/mac-deploy">mac-deploy</a> &middot;
+    MIT License &middot;
+    <a href="https://github.com/davidwhittington/mac-deploy/blob/main/CHANGELOG.md">Changelog</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-deploy/issues">Issues</a>
+  </p>
+</footer>
+
+</body>
+</html>

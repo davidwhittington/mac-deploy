@@ -6,6 +6,8 @@ Designed to be **repeatable and auditable** - run the audit script on any machin
 
 **Tested on:** macOS Sequoia / Tahoe · Apple Silicon (M-series) · zsh
 
+**Website:** [davidwhittington.github.io/mac-deploy](https://davidwhittington.github.io/mac-deploy)
+
 ---
 
 ## Background
@@ -53,9 +55,24 @@ mac-deploy/
 
 ## Quick Start
 
-### Audit a machine
+### Option A — Homebrew (recommended for quick setup)
 
-Run on any macOS workstation. Outputs a markdown security report:
+Install the hardening tools on any Mac in seconds:
+
+```bash
+brew tap davidwhittington/mac-deploy
+brew install mac-deploy
+
+# Run a quick audit
+mac-deploy-audit --brief
+
+# Full audit
+mac-deploy-audit
+```
+
+Tools installed: `mac-deploy-audit`, `mac-deploy-capture`, `mac-deploy-deploy`
+
+### Option B — Clone the repo (full workflow with audit history)
 
 ```bash
 git clone https://github.com/davidwhittington/mac-deploy.git
