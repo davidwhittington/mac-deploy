@@ -1,0 +1,32 @@
+# ~/.ssh/config — managed by mac-deploy
+# Template: configs/templates/ssh/config.tmpl
+# Regenerate: bash scripts/apply-configs.sh
+#
+# WARNING: apply-configs.sh will not overwrite ~/.ssh/config if it already
+# exists — it will write to ~/.ssh/config.mac-deploy instead. Merge manually.
+
+# ── Global defaults ───────────────────────────────────────────────────────────
+
+Host *
+    AddKeysToAgent          yes
+    UseKeychain             yes
+    IdentityFile            ${SSH_KEY_PATH}
+    ServerAliveInterval     ${SSH_SERVER_ALIVE_INTERVAL}
+    ServerAliveCountMax     ${SSH_SERVER_ALIVE_COUNT_MAX}
+    ControlMaster           ${SSH_CONTROL_MASTER}
+    ControlPersist          ${SSH_CONTROL_PERSIST}
+    ControlPath             ~/.ssh/control/%r@%h:%p
+
+# ── Lab machines ──────────────────────────────────────────────────────────────
+# Uncomment and populate with your actual hostnames/IPs.
+# Duplicate this block for each machine in your lab.
+
+# Host machine1
+#     HostName     machine1.${LAB_DOMAIN}
+#     User         ${SSH_DEFAULT_USER}
+#     Port         ${SSH_DEFAULT_PORT}
+
+# Host machine2
+#     HostName     machine2.${LAB_DOMAIN}
+#     User         ${SSH_DEFAULT_USER}
+#     Port         ${SSH_DEFAULT_PORT}

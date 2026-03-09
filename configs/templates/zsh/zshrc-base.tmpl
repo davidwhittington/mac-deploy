@@ -1,0 +1,68 @@
+# ~/.zshrc-mac-deploy — mac-deploy managed zsh base config
+# Template: configs/templates/zsh/zshrc-base.tmpl
+# Regenerate: bash scripts/apply-configs.sh
+#
+# Source this from ~/.zshrc:
+#   [[ -f ~/.zshrc-mac-deploy ]] && source ~/.zshrc-mac-deploy
+
+# ── History ───────────────────────────────────────────────────────────────────
+
+HISTSIZE=${ZSH_HISTORY_SIZE}
+SAVEHIST=${ZSH_HISTORY_SIZE}
+HISTFILE=~/.zsh_history
+
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt HIST_VERIFY
+
+# ── Environment ───────────────────────────────────────────────────────────────
+
+export EDITOR="${ZSH_DEFAULT_EDITOR}"
+export VISUAL="${ZSH_DEFAULT_EDITOR}"
+
+# Homebrew
+if [[ -f "${HOMEBREW_OPT}/bin/brew" ]]; then
+    eval "$("${HOMEBREW_OPT}/bin/brew" shellenv)"
+fi
+
+# ── Completion ────────────────────────────────────────────────────────────────
+
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+# ── Prompt ────────────────────────────────────────────────────────────────────
+
+# Use Starship if available; fall back to a simple prompt
+if command -v starship &>/dev/null; then
+    eval "$(starship init zsh)"
+else
+    PROMPT='%F{blue}%n@%m%f %F{green}%~%f %# '
+fi
+
+# ── Aliases ───────────────────────────────────────────────────────────────────
+
+alias ll='ls -lAh'
+alias la='ls -A'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias du='du -sh'
+
+# Git shortcuts
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git lg'
+
+# mac-deploy shortcuts
+alias audit='bash ~/Documents/projects/mac-deploy/scripts/audit/security-audit.sh --brief'
+
+# ── Source local overrides ────────────────────────────────────────────────────
+# Machine-specific additions that are NOT managed by mac-deploy templates.
+
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

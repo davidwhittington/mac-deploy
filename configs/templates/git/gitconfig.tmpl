@@ -1,0 +1,57 @@
+# ~/.gitconfig — managed by mac-deploy
+# Template: configs/templates/git/gitconfig.tmpl
+# Regenerate: bash scripts/apply-configs.sh
+
+[user]
+    name  = ${GIT_USER_NAME}
+    email = ${GIT_USER_EMAIL}
+
+[core]
+    editor      = ${GIT_EDITOR}
+    autocrlf    = input
+    whitespace  = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+    excludesfile = ~/.gitignore_global
+
+[init]
+    defaultBranch = ${GIT_DEFAULT_BRANCH}
+
+[pull]
+    rebase = false
+
+[push]
+    default = current
+
+[credential]
+    helper = ${GIT_CREDENTIAL_HELPER}
+
+[diff]
+    tool = ${GIT_DIFF_TOOL}
+
+[merge]
+    conflictstyle = diff3
+
+[rebase]
+    autosquash = true
+
+[alias]
+    st  = status
+    co  = checkout
+    br  = branch
+    lg  = log --oneline --graph --decorate --all
+    lp  = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %s %C(green)(%an)%Creset' --date=short
+    undo = reset --soft HEAD~1
+    wip  = commit -am 'wip'
+
+[color]
+    ui = auto
+
+[color "branch"]
+    current = yellow bold
+    local   = green bold
+    remote  = cyan bold
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old  = red bold
+    new  = green bold
