@@ -78,22 +78,22 @@ The system base config is at `/etc/pf.conf`. Anchors live in `/etc/pf.anchors/`.
 **1. Create the anchor file:**
 
 ```bash
-sudo tee /etc/pf.anchors/mac-deploy << 'EOF'
-# mac-deploy pf anchor
-# Inbound rules — block all, then allow specific ports
-
-# Allow established connections (return traffic)
-pass in quick on en0 proto tcp from any to any flags S/SA keep state
-
-# Allow SSH inbound
-pass in quick on en0 proto tcp to port 22
-
-# Block all other inbound
-block in on en0
-
-# Allow all outbound
-pass out all keep state
-EOF
+printf '%s\n' \
+  '# mac-deploy pf anchor' \
+  '# Inbound rules — block all, then allow specific ports' \
+  '' \
+  '# Allow established connections (return traffic)' \
+  'pass in quick on en0 proto tcp from any to any flags S/SA keep state' \
+  '' \
+  '# Allow SSH inbound' \
+  'pass in quick on en0 proto tcp to port 22' \
+  '' \
+  '# Block all other inbound' \
+  'block in on en0' \
+  '' \
+  '# Allow all outbound' \
+  'pass out all keep state' \
+  | sudo tee /etc/pf.anchors/mac-deploy
 ```
 
 > Replace `en0` with your active interface. Check with: `networksetup -listallhardwareports | grep -A1 "Wi-Fi\|Ethernet"`
@@ -134,31 +134,10 @@ sudo pfctl -s rules
 
 ### Making pf persist across reboots
 
-pf rules don't survive a reboot without a LaunchDaemon. Create one:
+pf rules don't survive a reboot without a LaunchDaemon. The plist is stored in the repo at `config/launchdaemons/com.mac-deploy.pf.plist`. Deploy it with:
 
 ```bash
-sudo tee /Library/LaunchDaemons/com.mac-deploy.pf.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>com.mac-deploy.pf</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/sbin/pfctl</string>
-    <string>-f</string>
-    <string>/etc/pf.conf</string>
-  </array>
-  <key>RunAtLoad</key>
-  <true/>
-  <key>StandardErrorPath</key>
-  <string>/var/log/mac-deploy-pf.log</string>
-</dict>
-</plist>
-EOF
-
+sudo cp config/launchdaemons/com.mac-deploy.pf.plist /Library/LaunchDaemons/
 sudo launchctl load /Library/LaunchDaemons/com.mac-deploy.pf.plist
 ```
 

@@ -27,77 +27,13 @@ Reports land in `private/workstations/` (the private submodule) so the history a
 
 ## Part 1 — The Scheduled Audit Wrapper
 
-```bash
-sudo tee /Users/david/Documents/projects/mac-deploy/scripts/audit/scheduled-audit.sh << 'SCRIPT'
-#!/usr/bin/env bash
-# scheduled-audit.sh — run security audit, diff against last report, log drift
-# Designed to be called by launchd. Output goes to system log.
-
-set -euo pipefail
-
-HOSTNAME=$(hostname -s)
-DATE=$(date +%Y-%m-%d)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-PRIVATE_DIR="$REPO_ROOT/private/workstations"
-REPORT="$PRIVATE_DIR/${HOSTNAME}-${DATE}.md"
-DRIFT_LOG="$PRIVATE_DIR/${HOSTNAME}-drift.log"
-
-mkdir -p "$PRIVATE_DIR"
-
-# ── Run the audit ─────────────────────────────────────────────────────────────
-
-echo "[$(date)] Starting scheduled security audit for $HOSTNAME" | tee -a "$DRIFT_LOG"
-bash "$SCRIPT_DIR/security-audit.sh" > "$REPORT" 2>/dev/null
-echo "[$(date)] Audit complete: $REPORT" | tee -a "$DRIFT_LOG"
-
-# ── Find the previous report to diff against ──────────────────────────────────
-
-PREV_REPORT=$(ls "$PRIVATE_DIR/${HOSTNAME}"-*.md 2>/dev/null | grep -v "$DATE" | sort | tail -1)
-
-if [[ -z "$PREV_REPORT" ]]; then
-  echo "[$(date)] No previous report found — establishing baseline" | tee -a "$DRIFT_LOG"
-  exit 0
-fi
-
-# ── Extract key security fields for comparison ────────────────────────────────
-
-extract_posture() {
-  local file="$1"
-  grep -E \
-    "FileVault is|SIP is|Gatekeeper|Firewall is|stealth mode|block all|ENABLED|DISABLED|Findings Summary" \
-    "$file" 2>/dev/null || true
-}
-
-CURRENT=$(extract_posture "$REPORT")
-PREVIOUS=$(extract_posture "$PREV_REPORT")
-
-if [[ "$CURRENT" == "$PREVIOUS" ]]; then
-  echo "[$(date)] No security drift detected" | tee -a "$DRIFT_LOG"
-  exit 0
-fi
-
-# ── Drift detected ────────────────────────────────────────────────────────────
-
-echo "[$(date)] *** SECURITY DRIFT DETECTED ***" | tee -a "$DRIFT_LOG"
-echo "[$(date)] Compared: $(basename "$PREV_REPORT") → $(basename "$REPORT")" | tee -a "$DRIFT_LOG"
-echo "" | tee -a "$DRIFT_LOG"
-
-diff <(echo "$PREVIOUS") <(echo "$CURRENT") | tee -a "$DRIFT_LOG" || true
-
-echo "" | tee -a "$DRIFT_LOG"
-echo "[$(date)] Full diff: diff '$PREV_REPORT' '$REPORT'" | tee -a "$DRIFT_LOG"
-
-# Write to macOS system log so it appears in Console.app
-/usr/bin/logger -t "mac-deploy-audit" "SECURITY DRIFT on $HOSTNAME — check $DRIFT_LOG"
-SCRIPT
-```
-
-Make it executable:
+The wrapper script is already in the repo at `scripts/audit/scheduled-audit.sh`. If you're setting up a new machine, clone the repo and make it executable:
 
 ```bash
-chmod +x /Users/david/Documents/projects/mac-deploy/scripts/audit/scheduled-audit.sh
+chmod +x scripts/audit/scheduled-audit.sh
 ```
+
+The script runs the audit, saves the report to `private/workstations/`, diffs it against the previous report, and writes a drift summary to the drift log if anything changed. It also calls `logger` so drift alerts appear in Console.app.
 
 ---
 
@@ -105,46 +41,14 @@ chmod +x /Users/david/Documents/projects/mac-deploy/scripts/audit/scheduled-audi
 
 LaunchAgents run as your user. LaunchDaemons run as root. For reading security state (FileVault, Gatekeeper, firewall), a LaunchAgent is sufficient — the audit script is designed to work without sudo.
 
+The plist is stored in the repo at `config/launchagents/com.mac-deploy.security-audit.plist`. Deploy it with:
+
 ```bash
 mkdir -p ~/Library/LaunchAgents
-
-cat > ~/Library/LaunchAgents/com.mac-deploy.security-audit.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>com.mac-deploy.security-audit</string>
-
-  <key>ProgramArguments</key>
-  <array>
-    <string>/bin/bash</string>
-    <string>/Users/david/Documents/projects/mac-deploy/scripts/audit/scheduled-audit.sh</string>
-  </array>
-
-  <!-- Run daily at 8:00 AM -->
-  <key>StartCalendarInterval</key>
-  <dict>
-    <key>Hour</key>
-    <integer>8</integer>
-    <key>Minute</key>
-    <integer>0</integer>
-  </dict>
-
-  <key>StandardOutPath</key>
-  <string>/tmp/mac-deploy-audit.log</string>
-
-  <key>StandardErrorPath</key>
-  <string>/tmp/mac-deploy-audit-error.log</string>
-
-  <!-- Run on next opportunity if the scheduled time was missed (e.g. machine was asleep) -->
-  <key>RunAtLoad</key>
-  <false/>
-</dict>
-</plist>
-EOF
+cp config/launchagents/com.mac-deploy.security-audit.plist ~/Library/LaunchAgents/
 ```
+
+> The plist references `REPO_PATH/scripts/audit/scheduled-audit.sh`. Edit that string to match your actual repo location before loading.
 
 Load it:
 
