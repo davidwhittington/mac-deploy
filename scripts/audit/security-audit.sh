@@ -153,6 +153,31 @@ echo "| Stealth Mode | $FW_STEALTH |"
 echo "| Block All Incoming | $FW_BLOCK |"
 echo
 
+# Bluetooth
+echo "### Bluetooth"
+echo
+BT_STATE=$(system_profiler SPBluetoothDataType 2>/dev/null | awk -F': ' '/State:/ {print $2; exit}' || echo "unknown")
+if echo "$BT_STATE" | grep -qi "^on$"; then
+  BT_POWER="on"
+  echo "- **Status:** ⚠️  ON — disable if not needed on this machine"
+else
+  BT_POWER="off"
+  echo "- **Status:** ✅ ${BT_STATE:-Off}"
+fi
+echo
+
+# Developer Mode
+echo "### Developer Mode (DevToolsSecurity)"
+echo
+DEV_MODE=$(DevToolsSecurity -status 2>/dev/null || echo "unavailable")
+echo "- **Status:** $DEV_MODE"
+if echo "$DEV_MODE" | grep -qi "enabled"; then
+  echo "- **Result:** ⚠️  Developer mode is enabled — expected on dev machines, flag on others"
+else
+  echo "- **Result:** ✅ Developer mode is disabled"
+fi
+echo
+
 hr
 
 # ── sharing services ─────────────────────────────────────────────────────────
@@ -303,6 +328,58 @@ echo
 
 hr
 
+# ── sensitive file permissions ────────────────────────────────────────────────
+
+echo "## Sensitive File Permissions"
+echo
+echo "Checks ~/.ssh, ~/.aws, ~/.gnupg, and ~/.config/op for world-readable files."
+echo "World-readable credential files are a direct path to privilege escalation."
+echo
+
+SENSITIVE_DIRS=("$HOME/.ssh" "$HOME/.aws" "$HOME/.gnupg" "$HOME/.config/op")
+WORLD_READABLE_FILES=()
+
+for dir in "${SENSITIVE_DIRS[@]}"; do
+  [[ -d "$dir" ]] || continue
+  while IFS= read -r file; do
+    WORLD_READABLE_FILES+=("$file")
+  done < <(find "$dir" -maxdepth 3 \( -perm -o+r -o -perm -o+w \) -type f 2>/dev/null || true)
+done
+
+if [[ ${#WORLD_READABLE_FILES[@]} -eq 0 ]]; then
+  echo "✅ No world-readable files found in sensitive directories."
+else
+  echo "⚠️  World-readable files found:"
+  echo
+  echo "\`\`\`"
+  printf '%s\n' "${WORLD_READABLE_FILES[@]}"
+  echo "\`\`\`"
+fi
+echo
+
+hr
+
+# ── sudoers ───────────────────────────────────────────────────────────────────
+
+echo "## Sudoers Configuration"
+echo
+SUDOERS_NOPASSWD=$(grep -rh "NOPASSWD" /etc/sudoers /etc/sudoers.d/ 2>/dev/null | grep -v '^[[:space:]]*#' || true)
+
+if [[ -z "$SUDOERS_NOPASSWD" ]]; then
+  echo "✅ No NOPASSWD entries found in sudoers."
+else
+  echo "⚠️  NOPASSWD entries detected — these users or commands can run sudo without a password:"
+  echo
+  echo "\`\`\`"
+  echo "$SUDOERS_NOPASSWD"
+  echo "\`\`\`"
+fi
+echo
+echo "> Note: reading /etc/sudoers requires sudo. Run \`sudo visudo -c\` to inspect the full config."
+echo
+
+hr
+
 # ── macos updates ─────────────────────────────────────────────────────────────
 
 echo "## macOS Updates"
@@ -399,6 +476,26 @@ if [[ -f "$SSHD_CONF" ]]; then
   if [[ "$ROOT_LOGIN" != "no" ]]; then
     finding "SSH PermitRootLogin not explicitly disabled" "🟡 Medium" "Set \`PermitRootLogin no\` in /etc/ssh/sshd_config.d/099-hardening.conf"
   fi
+fi
+
+# Bluetooth
+if [[ "$BT_POWER" == "on" ]]; then
+  finding "Bluetooth is on" "🟡 Medium" "Disable in System Settings → Bluetooth if not in active use"
+fi
+
+# Developer mode
+if echo "$DEV_MODE" | grep -qi "enabled"; then
+  finding "Developer mode enabled (DevToolsSecurity)" "🟡 Medium" "Disable on non-dev machines: \`sudo DevToolsSecurity -disable\`"
+fi
+
+# World-readable sensitive files
+if [[ ${#WORLD_READABLE_FILES[@]} -gt 0 ]]; then
+  finding "World-readable files in sensitive directories" "🟠 High" "Run \`chmod 600 ~/.ssh/* && chmod 700 ~/.ssh\` — review ~/.aws and ~/.gnupg similarly"
+fi
+
+# Sudoers NOPASSWD
+if [[ -n "$SUDOERS_NOPASSWD" ]]; then
+  finding "NOPASSWD entries in sudoers" "🟠 High" "Review with \`sudo visudo\` — remove unnecessary NOPASSWD grants"
 fi
 
 if [[ "$N" -eq 0 ]]; then
