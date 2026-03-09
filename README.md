@@ -63,14 +63,23 @@ Install the hardening tools on any Mac in seconds:
 brew tap davidwhittington/mac-deploy
 brew install mac-deploy
 
-# Run a quick audit
-mac-deploy-audit --brief
+# Interactive bootstrap — audit + harden in one run
+sudo mac-deploy-first-run
 
-# Full audit
-mac-deploy-audit
+# Or step by step
+mac-deploy-audit --brief
+sudo mac-deploy-harden-ssh
+sudo mac-deploy-firewall
 ```
 
-Tools installed: `mac-deploy-audit`, `mac-deploy-capture`, `mac-deploy-deploy`
+| Command | What it does |
+|---------|-------------|
+| `mac-deploy-audit` | Full security posture audit — outputs structured Markdown |
+| `mac-deploy-harden-ssh` | Write SSH hardening config, validate, reload sshd |
+| `mac-deploy-firewall` | Enable Application Firewall and stealth mode |
+| `mac-deploy-first-run` | Interactive bootstrap: Homebrew, audit, hardening, re-audit |
+| `mac-deploy-capture` | Snapshot Homebrew packages and shell config |
+| `mac-deploy-deploy` | Restore a saved machine profile to a new Mac |
 
 ### Option B — Clone the repo (full workflow with audit history)
 

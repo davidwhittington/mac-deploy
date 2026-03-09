@@ -9,6 +9,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.0] - 2026-03-08
+
+### Added
+- `scripts/harden-sshd.sh` — applies SSH hardening config to `/etc/ssh/sshd_config.d/099-hardening.conf`; validates with `sshd -t`, reloads sshd if active; supports `--dry-run`
+- `scripts/enable-stealth-firewall.sh` — enables Application Firewall and stealth mode; `--with-pf` configures a pf anchor (allow port 22, block all other inbound) with LaunchDaemon persistence; supports `--dry-run`
+- `scripts/first-run.sh` — interactive bootstrap for a new Mac: installs Homebrew, taps mac-deploy, runs audit, applies SSH and firewall hardening, re-audits to confirm baseline; supports `--auto` and `--audit-only`
+- GitHub Pages landing page (`index.html`) — dark-themed intro with quick start, feature overview, commands, and guide links
+- Homebrew tap (`davidwhittington/homebrew-mac-deploy`) — `brew tap davidwhittington/mac-deploy && brew install mac-deploy` installs all six commands
+
+### Changed
+- `README.md` — Homebrew tap as primary install method; command table; link to website
+
+---
+
 ## [0.4.0] - 2026-03-08
 
 ### Added
