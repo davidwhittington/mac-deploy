@@ -239,9 +239,8 @@ if confirm "  Apply SSH hardening?"; then
   fi
 
   if [[ -n "$HARDEN_SSH" ]]; then
-    EXTRA_FLAGS=""
-    ($CONFIRM || $AUTO) && EXTRA_FLAGS="--confirm"
-    sudo bash "$HARDEN_SSH" $EXTRA_FLAGS
+    # first-run.sh already gatekept this step via confirm() — always pass --confirm
+    sudo bash "$HARDEN_SSH" --confirm
   else
     echo "  harden-sshd.sh not found. Run manually from the mac-security repo."
   fi
@@ -276,9 +275,8 @@ if confirm "  Enable Application Firewall with stealth mode?"; then
   fi
 
   if [[ -n "$FIREWALL_SCRIPT" ]]; then
-    EXTRA_FLAGS=""
-    ($CONFIRM || $AUTO) && EXTRA_FLAGS="--confirm"
-    sudo bash "$FIREWALL_SCRIPT" $EXTRA_FLAGS
+    # first-run.sh already gatekept this step via confirm() — always pass --confirm
+    sudo bash "$FIREWALL_SCRIPT" --confirm
   else
     echo "  enable-stealth-firewall.sh not found. Run manually from the mac-security repo."
   fi
