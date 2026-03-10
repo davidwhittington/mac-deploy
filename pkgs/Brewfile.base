@@ -46,6 +46,7 @@ brew "zsh-completions"
 brew "mas"           # Mac App Store CLI
 
 # ── Casks (GUI Apps) — comment out what's not needed ─────────────────────────
+cask "claude"            # Claude Code AI assistant
 # cask "iterm2"
 # cask "visual-studio-code"
 # cask "homebrew/cask/docker"

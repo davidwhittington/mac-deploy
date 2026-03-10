@@ -297,6 +297,41 @@ if [[ -n "$AUDIT_CMD" ]]; then
   echo "$FINAL_OUTPUT" | awk '/## Findings Summary/,0'
 fi
 
+# ── step 8: claude code ───────────────────────────────────────────────────────
+
+header "Step 8 — Claude Code (optional)"
+
+cat <<'INFO'
+  Sets up Claude Code with:
+    - Status line (dir, git branch, model, context %)
+    - ~/.claude/CLAUDE.md global instructions template
+    - Project management scripts (GitHub labels, issue templates)
+
+  Run separately any time with: bash scripts/setup/setup-claude.sh
+
+INFO
+
+SETUP_CLAUDE=""
+if [[ -f "$(dirname "$0")/setup/setup-claude.sh" ]]; then
+  SETUP_CLAUDE="$(dirname "$0")/setup/setup-claude.sh"
+elif [[ -f "scripts/setup/setup-claude.sh" ]]; then
+  SETUP_CLAUDE="scripts/setup/setup-claude.sh"
+fi
+
+if confirm "  Set up Claude Code now?"; then
+  if [[ -n "$SETUP_CLAUDE" ]]; then
+    ARGS=""
+    $AUTO && ARGS="--auto"
+    bash "$SETUP_CLAUDE" $ARGS
+  else
+    echo "  setup-claude.sh not found. Run from the mac-deploy repo:"
+    echo "    bash scripts/setup/setup-claude.sh"
+  fi
+else
+  echo "  Skipping Claude Code setup."
+  echo "  Run later with: bash scripts/setup/setup-claude.sh"
+fi
+
 # ── done ──────────────────────────────────────────────────────────────────────
 
 hr

@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Agent",
+      "NotebookEdit",
+      "LSP",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskOutput",
+      "TaskStop",
+      "TaskUpdate",
+      "Skill",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "AskUserQuestion",
+      "EnterWorktree"
+    ]
+  },
+  "defaultMode": "${CLAUDE_DEFAULT_MODE}",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ${HOME}/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
+  }
+}
