@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mac-security tools — Library</title>
+  <meta name="description" content="A collection of macOS security, hardening, and automation tools. Installable via Homebrew." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="mac-security tools — Library" />
+  <meta property="og:description" content="A collection of macOS security, hardening, and automation tools. Installable via Homebrew." />
+  <meta property="og:url" content="https://davidwhittington.github.io/mac-security/tools/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="mac-security tools — Library" />
+  <meta name="twitter:description" content="A collection of macOS security, hardening, and automation tools. Installable via Homebrew." />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --code-bg: #1f2937;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .hero {
+      max-width: 860px;
+      margin: 5rem auto 3rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+    h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .install-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem 2rem;
+      max-width: 480px;
+      margin: 0 auto 3.5rem;
+      text-align: left;
+      position: relative;
+    }
+    .install-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .install-block pre {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.9rem;
+      color: var(--green);
+      white-space: pre;
+    }
+    .install-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    p { color: var(--muted); margin-bottom: 1rem; }
+
+    /* Tool cards */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem 1.75rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: start;
+      transition: border-color 0.15s;
+    }
+    .tool-card:hover { border-color: var(--accent); text-decoration: none; }
+
+    .tool-info { min-width: 0; }
+    .tool-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .tool-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+    .tool-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tool-tag {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      letter-spacing: 0.03em;
+      font-weight: 500;
+    }
+    .tag-security {
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      color: var(--red);
+    }
+    .tag-automation {
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.3);
+      color: var(--green);
+    }
+    .tag-network {
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+    }
+    .tag-audit {
+      background: rgba(210, 153, 34, 0.1);
+      border: 1px solid rgba(210, 153, 34, 0.3);
+      color: var(--orange);
+    }
+
+    .tool-install {
+      display: flex;
+      align-items: center;
+    }
+    .tool-install code {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.78rem;
+      color: var(--green);
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.4rem;
+      white-space: nowrap;
+    }
+
+    /* Version pill */
+    .tool-version {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.5rem;
+      border-radius: 2rem;
+      margin-left: 0.75rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      line-height: 1.6;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+      background: var(--border);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .tool-card { grid-template-columns: 1fr; }
+      nav { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">mac-security / tools</span>
+  <div class="nav-links">
+    <a href="/mac-security/">mac-security</a>
+    <a href="https://github.com/davidwhittington/mac-security">GitHub</a>
+    <a href="https://github.com/davidwhittington/homebrew-mac-security">Homebrew Tap</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Tool Library</div>
+  <h1>macOS security<br><span>and automation tools.</span></h1>
+  <p class="hero-sub">
+    Everything ships through a single Homebrew tap. Install what you need,
+    skip what you don't.
+  </p>
+
+  <div class="install-block">
+    <div class="install-label">Add the tap</div>
+    <pre>brew tap davidwhittington/mac-security</pre>
+    <div class="install-note">
+      Then install individual tools below. macOS Ventura / Sonoma / Sequoia / Tahoe &middot; Apple Silicon and Intel
+    </div>
+  </div>
+</div>
+
+<section>
+  <h2>Available tools</h2>
+  <p>Each tool installs independently. Click for documentation and usage details.</p>
+
+  <div class="tools-grid">
+
+    <a href="/mac-security/" class="tool-card">
+      <div class="tool-info">
+        <div class="tool-name">mac-security<span class="tool-version">v0.9.0</span></div>
+        <div class="tool-desc">
+          Full security posture audit and hardening toolkit for macOS workstations.
+          FileVault, SIP, Gatekeeper, firewall, SSH config, open ports, sharing services,
+          user accounts, and update policy. Outputs structured Markdown reports.
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag tag-security">security</span>
+          <span class="tool-tag tag-audit">audit</span>
+          <span class="tool-tag tag-automation">hardening</span>
+        </div>
+      </div>
+      <div class="tool-install">
+        <code>brew install mac-security</code>
+      </div>
+    </a>
+
+    <a href="/mac-security/tools/chromium-browse/" class="tool-card">
+      <div class="tool-info">
+        <div class="tool-name">chromium-browse<span class="tool-version">v0.9.0</span></div>
+        <div class="tool-desc">
+          Headless browsing traffic generator for any Chromium-based browser.
+          Drives Island, Chrome, Edge, Brave, Arc, Comet, Atlas, and others via their
+          native DevTools Protocol. Randomized URL visits, link following, scroll
+          simulation, and configurable dwell times.
+        </div>
+        <div class="tool-tags">
+          <span class="tool-tag tag-network">network</span>
+          <span class="tool-tag tag-automation">automation</span>
+        </div>
+      </div>
+      <div class="tool-install">
+        <code>brew install chromium-browse</code>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<section>
+  <h2>Installing tools</h2>
+  <p>All tools live in the <code style="color:var(--green);font-family:monospace">davidwhittington/mac-security</code> tap. Add it once, then install by name.</p>
+  <div class="install-block" style="max-width:100%;margin:1.25rem 0 0;">
+    <div class="install-label">Examples</div>
+    <pre><span style="color:var(--muted)"># Add the tap (one time)</span>
+brew tap davidwhittington/mac-security
+
+<span style="color:var(--muted)"># Install individual tools</span>
+brew install mac-security
+brew install chromium-browse
+
+<span style="color:var(--muted)"># Upgrade everything from the tap</span>
+brew upgrade davidwhittington/mac-security/mac-security
+brew upgrade davidwhittington/mac-security/chromium-browse</pre>
+  </div>
+</section>
+
+<footer>
+  <p>
+    <a href="/mac-security/">mac-security</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-security">Source</a> &middot;
+    <a href="https://github.com/davidwhittington/homebrew-mac-security">Homebrew Tap</a> &middot;
+    MIT License
+  </p>
+</footer>
+
+<script>
+  function addCopyButton(container, getTextFn) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    container.appendChild(btn);
+    btn.addEventListener('click', function () {
+      var text = getTextFn();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          showCopied(btn);
+        }).catch(function () { fallbackCopy(text, btn); });
+      } else { fallbackCopy(text, btn); }
+    });
+  }
+
+  function showCopied(btn) {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(function () {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); showCopied(btn); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  document.querySelectorAll('.install-block').forEach(function (block) {
+    var pre = block.querySelector('pre');
+    if (pre) {
+      addCopyButton(block, function () {
+        return (pre.innerText || pre.textContent).trim();
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
