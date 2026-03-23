@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tmux + iTerm2 + Claude Code Workflow — mac-security</title>
+  <meta name="description" content="Persistent terminal sessions across a macOS fleet using tmux, iTerm2 control mode, and Claude Code. Sessions survive disconnects, logs sync via iCloud." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="tmux + iTerm2 + Claude Code Workflow — mac-security" />
+  <meta property="og:description" content="Persistent terminal sessions across a macOS fleet using tmux, iTerm2 control mode, and Claude Code." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="tmux + iTerm2 + Claude Code Workflow — mac-security" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --code-bg: #1f2937;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.88em;
+      color: var(--green);
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    /* Nav */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Guide header */
+    .guide-header {
+      max-width: 860px;
+      margin: 3.5rem auto 0;
+      padding: 0 2rem;
+    }
+    .breadcrumb {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .breadcrumb a { color: var(--muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .guide-header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .guide-header h1 span { color: var(--accent); }
+    .guide-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Fleet badge row */
+    .fleet-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .fleet-badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.2rem 0.65rem;
+      border-radius: 2rem;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.02em;
+    }
+    .fleet-badge .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 0.4rem;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+
+    /* Section */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      margin-top: 1.75rem;
+    }
+    h3:first-child { margin-top: 0; }
+    p { color: var(--muted); margin-bottom: 1rem; }
+
+    /* Flag list */
+    .flag-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+    .flag-list li {
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 0.3rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .flag-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.72rem;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .flag-list code {
+      color: var(--accent);
+      background: transparent;
+      padding: 0;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .code-block pre .comment { color: var(--muted); }
+    .code-block pre .cmd { color: var(--green); }
+    .code-block pre .flag { color: var(--accent); }
+    .code-block pre .str { color: var(--orange); }
+    .code-label {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Copy button */
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      line-height: 1.6;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+      background: var(--border);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 1.25rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0.65rem 1rem;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 0.6rem 1rem;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td code {
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    tbody td:first-child {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Troubleshooting cards */
+    .trouble-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .trouble-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1.15rem 1.3rem;
+    }
+    .trouble-card .trouble-icon {
+      font-size: 1.15rem;
+      margin-bottom: 0.4rem;
+    }
+    .trouble-card h3 {
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      margin-top: 0;
+    }
+    .trouble-card p {
+      font-size: 0.82rem;
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    /* Detail list */
+    .detail-list {
+      list-style: none;
+      margin: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .detail-list li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .detail-list li strong { color: var(--text); font-weight: 600; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      nav { flex-direction: column; gap: 1rem; }
+      .trouble-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../../index.html" class="nav-brand" style="text-decoration:none">mac-security</a>
+  <div class="nav-links">
+    <a href="https://github.com/davidwhittington/mac-security">GitHub</a>
+    <a href="https://github.com/davidwhittington/mac-security/tree/main/docs/guides">Guides</a>
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+</nav>
+
+<div class="guide-header">
+  <div class="breadcrumb">
+    <a href="../../index.html">mac-security</a> / <a href="https://github.com/davidwhittington/mac-security/tree/main/docs/guides">guides</a> / tmux-iterm2-workflow
+  </div>
+  <h1>tmux + iTerm2 +<br><span>Claude Code Workflow</span></h1>
+  <p class="guide-sub">
+    Persistent terminal sessions across the macOS fleet. Sessions survive disconnects.
+    Logs sync via iCloud. Native iTerm2 look and feel.
+  </p>
+  <div class="fleet-badges">
+    <span class="fleet-badge"><span class="dot"></span>macbook-pro</span>
+    <span class="fleet-badge"><span class="dot"></span>macbook-air</span>
+    <span class="fleet-badge"><span class="dot"></span>mac-pro</span>
+  </div>
+</div>
+
+<!-- How It Works -->
+<section>
+  <h2>How it works</h2>
+  <p>
+    Every iTerm2 window automatically connects to a tmux session in <strong style="color:var(--text)">control mode</strong>
+    (<code>tmux -CC</code>). iTerm2 renders tmux windows as native tabs and tmux panes as native splits.
+    You get persistent sessions with the full iTerm2 experience: scrollback, search, native copy/paste, font rendering.
+  </p>
+
+  <div class="code-block">
+    <div class="code-label">~/.zshrc</div>
+<pre><span class="comment"># Auto-launch tmux in iTerm2 control mode (native tabs/splits)</span>
+<span class="cmd">if</span> [[ <span class="flag">-z</span> <span class="str">"$TMUX"</span> &amp;&amp; <span class="str">"$TERM_PROGRAM"</span> == <span class="str">"iTerm.app"</span> &amp;&amp; <span class="flag">-z</span> <span class="str">"$INSIDE_EMACS"</span> &amp;&amp; <span class="flag">-z</span> <span class="str">"$VSCODE_PID"</span> ]]; <span class="cmd">then</span>
+  tmux <span class="flag">-CC</span> new-session <span class="flag">-A</span> <span class="flag">-s</span> main
+<span class="cmd">fi</span></pre>
+  </div>
+
+  <ul class="flag-list">
+    <li><code>-CC</code> iTerm2 control mode &mdash; native tabs and splits instead of terminal-in-terminal</li>
+    <li><code>-A</code> attach to existing session if it exists, create if it doesn't</li>
+    <li><code>-s main</code> session name</li>
+    <li>Guards prevent nesting, non-iTerm terminals, and editor shells</li>
+  </ul>
+</section>
+
+<!-- Session Logging -->
+<section>
+  <h2>Session logging</h2>
+  <p>
+    All pane output is automatically logged to <code>~/Documents/logs/</code> (iCloud-synced)
+    via tmux hooks in <code>~/.tmux.conf</code>.
+  </p>
+
+  <div class="code-block">
+    <div class="code-label">Log filename format</div>
+<pre><span class="cmd">hostname</span>-YYYY-MM-DD.HH:MM:SS.log</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">Example logs</div>
+<pre>macbook-pro-2026-03-21.14:03:22.log
+mac-pro-2026-03-21.09:15:00.log
+macbook-air-2026-03-21.11:30:45.log</pre>
+  </div>
+
+  <p>
+    New windows automatically start logging. Logs from all three machines sync to iCloud
+    via <code>~/Documents/logs/</code>.
+  </p>
+</section>
+
+<!-- Day-to-Day Usage -->
+<section>
+  <h2>Day-to-day usage</h2>
+
+  <h3>Local (sitting at the machine)</h3>
+  <p>
+    Open iTerm2. It auto-connects to the <code>main</code> tmux session. If you had windows
+    open before, they're all still there.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Action</th><th>Shortcut</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>New window</td><td><code>Cmd+T</code></td></tr>
+        <tr><td>Split horizontal</td><td><code>Cmd+D</code></td></tr>
+        <tr><td>Split vertical</td><td><code>Cmd+Shift+D</code></td></tr>
+        <tr><td>Close pane</td><td><code>Cmd+W</code> or <code>exit</code></td></tr>
+        <tr><td>Switch tabs</td><td><code>Cmd+1-9</code> or <code>Cmd+Left/Right</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    All standard iTerm2 shortcuts work because iTerm renders the tmux session natively.
+  </p>
+
+  <h3>Remote (SSH between machines)</h3>
+  <p>
+    SSH to another machine and attach to its tmux session.
+    iTerm2 opens the remote session in control mode &mdash; remote tabs appear as native iTerm tabs.
+    If SSH drops, the session keeps running. Reconnect and reattach.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># From macbook-pro, attach to mac-pro's session</span>
+<span class="cmd">ssh</span> mac-pro <span class="flag">-t</span> <span class="str">"tmux -CC attach -s main"</span>
+
+<span class="comment"># If no session exists yet</span>
+<span class="cmd">ssh</span> mac-pro <span class="flag">-t</span> <span class="str">"tmux -CC new-session -A -s main"</span></pre>
+  </div>
+
+  <h3>Claude Code in tmux</h3>
+  <p>
+    Claude Code works normally inside tmux sessions. If a long task is running and your
+    connection drops, the tmux session keeps it alive. Reattach and it's still going.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># Tab 1: Claude Code session</span>
+<span class="cmd">cd</span> ~/Documents/projects/cosmicllama
+<span class="cmd">claude</span>
+
+<span class="comment"># Tab 2: dev server or tests (Cmd+T for new tab)</span>
+<span class="cmd">npm</span> run dev
+
+<span class="comment"># Tab 3: SSH to another machine</span>
+<span class="cmd">ssh</span> mac-pro</pre>
+  </div>
+
+  <ul class="detail-list">
+    <li><strong>Terminal detection</strong> &mdash; Claude Code detects the terminal correctly through tmux</li>
+    <li><strong>Shell integration</strong> &mdash; iTerm2 marks and tab titles work as expected</li>
+    <li><strong>Passthrough</strong> &mdash; The <code>allow-passthrough</code> setting in .tmux.conf ensures iTerm2 escape sequences pass through</li>
+  </ul>
+
+  <h3>Named sessions</h3>
+  <p>
+    The default session is <code>main</code>. Create purpose-specific sessions when needed.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># Start a dedicated session for a project</span>
+<span class="cmd">tmux</span> <span class="flag">-CC</span> new-session <span class="flag">-s</span> cosmicllama
+
+<span class="comment"># List sessions</span>
+<span class="cmd">tmux</span> list-sessions
+
+<span class="comment"># Attach to a specific session</span>
+<span class="cmd">tmux</span> <span class="flag">-CC</span> attach <span class="flag">-s</span> cosmicllama</pre>
+  </div>
+</section>
+
+<!-- Key Bindings -->
+<section>
+  <h2>Key bindings</h2>
+  <p>
+    These work in regular tmux mode (without <code>-CC</code>). In control mode, iTerm2 shortcuts
+    take over, but prefix keys (<code>Ctrl+B</code> or <code>Ctrl+A</code>) still work.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Binding</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>prefix + |</code></td><td>Split horizontally</td></tr>
+        <tr><td><code>prefix + -</code></td><td>Split vertically</td></tr>
+        <tr><td><code>prefix + c</code></td><td>New window</td></tr>
+        <tr><td><code>prefix + h/j/k/l</code></td><td>Navigate panes (vim-style)</td></tr>
+        <tr><td><code>prefix + H/J/K/L</code></td><td>Resize panes</td></tr>
+        <tr><td><code>prefix + r</code></td><td>Reload config</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Config Files -->
+<section>
+  <h2>Config files</h2>
+  <p>
+    Identical configuration across all three machines.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>File</th><th>Location</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>~/.tmux.conf</code></td>
+          <td>All machines</td>
+          <td>tmux config, logging hooks, iTerm2 integration</td>
+        </tr>
+        <tr>
+          <td><code>~/.zshrc</code></td>
+          <td>All machines</td>
+          <td>Auto-launch guard</td>
+        </tr>
+        <tr>
+          <td><code>~/Documents/logs/</code></td>
+          <td>All machines (iCloud)</td>
+          <td>Session logs</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Troubleshooting -->
+<section>
+  <h2>Troubleshooting</h2>
+  <p>Common issues and how to resolve them.</p>
+
+  <div class="trouble-grid">
+    <div class="trouble-card">
+      <div class="trouble-icon">&#x26A0;&#xFE0F;</div>
+      <h3>"sessions should be nested with care"</h3>
+      <p>
+        You tried to start tmux inside tmux. The <code>.zshrc</code> guard prevents this automatically,
+        but if you manually run tmux inside a session, use
+        <code>tmux -CC attach -t other-session</code> instead.
+      </p>
+    </div>
+    <div class="trouble-card">
+      <div class="trouble-icon">&#x1F50C;</div>
+      <h3>Detached session won't reattach</h3>
+      <p>
+        Kill stale sessions with <code>tmux kill-session -t name</code> and start fresh.
+        If <code>tmux list-sessions</code> shows the session but attach fails, the
+        control mode client may have hung. Kill and reconnect.
+      </p>
+    </div>
+    <div class="trouble-card">
+      <div class="trouble-icon">&#x1F4DD;</div>
+      <h3>Logs not appearing</h3>
+      <p>
+        Check that <code>~/Documents/logs/</code> exists. New windows trigger the logging hook;
+        existing windows from before the config change won't log until you open a new one.
+      </p>
+    </div>
+    <div class="trouble-card">
+      <div class="trouble-icon">&#x1F916;</div>
+      <h3>SSH dropped mid-Claude</h3>
+      <p>
+        SSH back in and run <code>tmux -CC attach -s main</code>.
+        Your Claude Code session is still running. The tmux session kept it alive
+        on the remote machine.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    <a href="https://github.com/davidwhittington/mac-security">mac-security</a> &middot;
+    MIT License &middot;
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-security/issues">Issues</a>
+  </p>
+</footer>
+
+<script>
+  function addCopyButton(container, getTextFn) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    container.appendChild(btn);
+
+    btn.addEventListener('click', function () {
+      var text = getTextFn();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          showCopied(btn);
+        }).catch(function () {
+          fallbackCopy(text, btn);
+        });
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  }
+
+  function showCopied(btn) {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(function () {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); showCopied(btn); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  document.querySelectorAll('.code-block').forEach(function (block) {
+    var pre = block.querySelector('pre');
+    addCopyButton(block, function () {
+      return (pre.innerText || pre.textContent).trim();
+    });
+  });
+</script>
+
+</body>
+</html>

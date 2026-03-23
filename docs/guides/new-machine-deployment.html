@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Machine Deployment — mac-security</title>
+  <meta name="description" content="Full environment setup for a new macOS workstation. Covers Homebrew, Starship, Nerd Fonts, tmux, shell config, SSH mesh, and security hardening." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="New Machine Deployment — mac-security" />
+  <meta property="og:description" content="Full environment setup for a new macOS workstation. Homebrew, Starship, Nerd Fonts, tmux, shell, SSH, security." />
+  <meta name="twitter:card" content="summary" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --code-bg: #1f2937;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.88em;
+      color: var(--green);
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    /* Nav */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Guide header */
+    .guide-header {
+      max-width: 860px;
+      margin: 3.5rem auto 0;
+      padding: 0 2rem;
+    }
+    .breadcrumb {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .breadcrumb a { color: var(--muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .guide-header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .guide-header h1 span { color: var(--accent); }
+    .guide-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin-bottom: 0.5rem;
+    }
+
+    /* TOC */
+    .toc {
+      max-width: 860px;
+      margin: 2rem auto 0;
+      padding: 0 2rem;
+    }
+    .toc-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1.25rem 1.5rem;
+    }
+    .toc-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .toc-inner ol {
+      list-style: none;
+      counter-reset: toc;
+    }
+    .toc-inner ol li {
+      counter-increment: toc;
+      padding: 0.25rem 0;
+    }
+    .toc-inner ol li a {
+      color: var(--muted);
+      font-size: 0.88rem;
+      transition: color 0.15s;
+    }
+    .toc-inner ol li a:hover { color: var(--accent); text-decoration: none; }
+    .toc-inner ol li a::before {
+      content: counter(toc) ".";
+      color: var(--accent);
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.8rem;
+      margin-right: 0.6rem;
+      opacity: 0.7;
+    }
+
+    /* Section */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      margin-top: 1.75rem;
+    }
+    h3:first-child { margin-top: 0; }
+    p { color: var(--muted); margin-bottom: 1rem; }
+
+    /* Step number */
+    .step-num {
+      display: inline-block;
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      width: 28px;
+      height: 28px;
+      line-height: 26px;
+      text-align: center;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .code-block pre .comment { color: var(--muted); }
+    .code-block pre .cmd { color: var(--green); }
+    .code-block pre .flag { color: var(--accent); }
+    .code-block pre .str { color: var(--orange); }
+    .code-label {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Copy button */
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      line-height: 1.6;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+      background: var(--border);
+    }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 1.25rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0.65rem 1rem;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 0.6rem 1rem;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody td code { font-size: 0.82rem; white-space: nowrap; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+
+    /* Package grid */
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .pkg {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.4rem;
+      padding: 0.4rem 0.7rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .pkg.core { border-left: 3px solid var(--accent); color: var(--text); }
+    .pkg.tool { border-left: 3px solid var(--green); }
+    .pkg.fun { border-left: 3px solid var(--orange); }
+
+    .pkg-legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .pkg-legend span::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+    .pkg-legend .leg-core::before { background: var(--accent); }
+    .pkg-legend .leg-tool::before { background: var(--green); }
+    .pkg-legend .leg-fun::before { background: var(--orange); }
+
+    /* Callout */
+    .callout {
+      background: rgba(88, 166, 255, 0.06);
+      border: 1px solid rgba(88, 166, 255, 0.25);
+      border-radius: 0.6rem;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .callout strong { color: var(--accent); }
+
+    .callout.warn {
+      background: rgba(210, 153, 34, 0.06);
+      border-color: rgba(210, 153, 34, 0.3);
+    }
+    .callout.warn strong { color: var(--orange); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      nav { flex-direction: column; gap: 1rem; }
+      .pkg-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../../index.html" class="nav-brand" style="text-decoration:none">mac-security</a>
+  <div class="nav-links">
+    <a href="https://github.com/davidwhittington/mac-security">GitHub</a>
+    <a href="https://github.com/davidwhittington/mac-security/tree/main/docs/guides">Guides</a>
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+</nav>
+
+<div class="guide-header">
+  <div class="breadcrumb">
+    <a href="../../index.html">mac-security</a> / <a href="https://github.com/davidwhittington/mac-security/tree/main/docs/guides">guides</a> / new-machine-deployment
+  </div>
+  <h1>New Machine<br><span>Deployment Guide</span></h1>
+  <p class="guide-sub">
+    Everything needed to bring a fresh Mac from factory state to a fully configured workstation
+    matching the lab fleet. Shell, prompt, fonts, tmux, SSH mesh, packages, and security baseline.
+  </p>
+</div>
+
+<div class="toc">
+  <div class="toc-inner">
+    <div class="toc-label">In this guide</div>
+    <ol>
+      <li><a href="#homebrew">Homebrew &amp; Core Packages</a></li>
+      <li><a href="#shell">Shell Configuration (zsh + antidote)</a></li>
+      <li><a href="#starship">Starship Prompt</a></li>
+      <li><a href="#fonts">Nerd Fonts</a></li>
+      <li><a href="#iterm">iTerm2 Settings</a></li>
+      <li><a href="#tmux">tmux + iTerm2 Control Mode</a></li>
+      <li><a href="#git">Git Configuration</a></li>
+      <li><a href="#ssh">SSH &amp; Fleet Mesh</a></li>
+      <li><a href="#security">Security Hardening</a></li>
+      <li><a href="#claude">Claude Code</a></li>
+      <li><a href="#packages">Full Package List</a></li>
+    </ol>
+  </div>
+</div>
+
+<!-- 1. Homebrew -->
+<section id="homebrew">
+  <h2><span class="step-num">1</span> Homebrew &amp; core packages</h2>
+  <p>Install Homebrew first, then the core tools everything else depends on.</p>
+
+  <div class="code-block">
+<pre><span class="comment"># Install Homebrew</span>
+/bin/bash <span class="flag">-c</span> <span class="str">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>
+
+<span class="comment"># Apple Silicon: add to PATH (installer will prompt, but for scripts)</span>
+<span class="cmd">echo</span> <span class="str">'eval "$(/opt/homebrew/bin/brew shellenv)"'</span> &gt;&gt; ~/.zprofile
+<span class="cmd">eval</span> <span class="str">"$(/opt/homebrew/bin/brew shellenv)"</span>
+
+<span class="comment"># Core taps</span>
+<span class="cmd">brew tap</span> davidwhittington/mac-security
+<span class="cmd">brew tap</span> peonping/tap
+
+<span class="comment"># Core packages</span>
+<span class="cmd">brew install</span> git gh node antidote starship tmux
+<span class="cmd">brew install</span> btop fastfetch htop tree watch wget
+<span class="cmd">brew install</span> gnupg pinentry-mac git-crypt
+<span class="cmd">brew install</span> mac-security direnv</pre>
+  </div>
+</section>
+
+<!-- 2. Shell -->
+<section id="shell">
+  <h2><span class="step-num">2</span> Shell configuration</h2>
+  <p>
+    zsh with <a href="https://github.com/mattmc3/antidote">antidote</a> for plugin management. No Oh My Zsh framework directly;
+    antidote loads specific OMZ plugins on demand.
+  </p>
+
+  <div class="code-block">
+    <div class="code-label">~/.zsh_plugins.txt</div>
+<pre>getantidote/use-omz
+ohmyzsh/ohmyzsh path:lib
+
+ohmyzsh/ohmyzsh path:plugins/aliases
+ohmyzsh/ohmyzsh path:plugins/common-aliases
+ohmyzsh/ohmyzsh path:plugins/debian
+ohmyzsh/ohmyzsh path:plugins/firewalld
+ohmyzsh/ohmyzsh path:plugins/git
+ohmyzsh/ohmyzsh path:plugins/history
+ohmyzsh/ohmyzsh path:plugins/nvm
+ohmyzsh/ohmyzsh path:plugins/podman
+ohmyzsh/ohmyzsh path:plugins/sudo
+
+ptavares/zsh-direnv
+toku-sa-n/zsh-dot-up
+zsh-users/zsh-syntax-highlighting kind:defer</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">~/.zshrc</div>
+<pre><span class="cmd">eval</span> <span class="str">"$(starship init zsh)"</span>
+
+<span class="cmd">test</span> <span class="flag">-e</span> <span class="str">"${HOME}/.iterm2_shell_integration.zsh"</span> &amp;&amp; <span class="cmd">source</span> <span class="str">"${HOME}/.iterm2_shell_integration.zsh"</span>
+
+<span class="cmd">source</span> $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+antidote load
+
+<span class="cmd">export</span> PATH=<span class="str">"$HOME/.local/bin:$PATH"</span>
+<span class="cmd">export</span> GPG_TTY=$(tty)
+
+<span class="comment"># direnv</span>
+<span class="cmd">eval</span> <span class="str">"$(direnv hook zsh)"</span>
+
+<span class="comment"># Auto-launch tmux in iTerm2 control mode</span>
+<span class="cmd">if</span> [[ <span class="flag">-z</span> <span class="str">"$TMUX"</span> &amp;&amp; <span class="str">"$TERM_PROGRAM"</span> == <span class="str">"iTerm.app"</span> &amp;&amp; <span class="flag">-z</span> <span class="str">"$INSIDE_EMACS"</span> &amp;&amp; <span class="flag">-z</span> <span class="str">"$VSCODE_PID"</span> ]]; <span class="cmd">then</span>
+  tmux <span class="flag">-CC</span> new-session <span class="flag">-A</span> <span class="flag">-s</span> main
+<span class="cmd">fi</span></pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">~/.zprofile</div>
+<pre><span class="cmd">eval</span> <span class="str">"$(/opt/homebrew/bin/brew shellenv)"</span></pre>
+  </div>
+</section>
+
+<!-- 3. Starship -->
+<section id="starship">
+  <h2><span class="step-num">3</span> Starship prompt</h2>
+  <p>
+    Custom Starship config with a two-line layout: git metrics on top, character prompt on the left,
+    directory and toolchain info on the right. Key settings:
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><code>command_timeout</code></td><td>2000ms</td><td>Prevents git timeout warnings on large repos</td></tr>
+        <tr><td><code>ssh_only</code> (hostname)</td><td>false</td><td>Always shows hostname so you know which machine you're on</td></tr>
+        <tr><td><code>git_branch.ignore_branches</code></td><td>main, master</td><td>Only shows branch name on feature branches</td></tr>
+        <tr><td><code>git_metrics</code></td><td>enabled</td><td>Shows +added/-deleted on first line</td></tr>
+        <tr><td><code>directory.truncation_length</code></td><td>2</td><td>Keeps path short</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <strong>Config location:</strong> <code>~/.config/starship.toml</code><br>
+    Copy from any existing fleet machine. The config is identical across all three.
+    The full file is ~300 lines covering language modules, git status symbols, and battery display.
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">Key sections to verify</div>
+<pre><span class="comment"># Top of file</span>
+add_newline = <span class="flag">true</span>
+command_timeout = <span class="flag">2000</span>
+
+<span class="comment"># Hostname shows locally, not just over SSH</span>
+[hostname]
+ssh_only = <span class="flag">false</span>
+format = <span class="str">"[$emoji$hostname]($style) "</span>
+style = <span class="str">"bold dimmed green"</span></pre>
+  </div>
+</section>
+
+<!-- 4. Fonts -->
+<section id="fonts">
+  <h2><span class="step-num">4</span> Nerd Fonts</h2>
+  <p>
+    JetBrains Mono Nerd Font is the standard across the fleet. The Nerd Font variant includes
+    glyphs for Starship, Powerline, devicons, and other terminal symbols.
+  </p>
+
+  <div class="code-block">
+<pre><span class="cmd">brew install</span> <span class="flag">--cask</span> font-jetbrains-mono-nerd-font</pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>iTerm2 font</td><td><code>JetBrainsMonoNFM-Regular 18</code></td></tr>
+        <tr><td>PostScript name</td><td><code>JetBrainsMonoNFM-Regular</code></td></tr>
+        <tr><td>Variant</td><td>Nerd Font Mono (monospaced glyphs, no overlap)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <strong>Not the same as JetBrainsMono-Regular.</strong>
+    The non-NF variant looks similar but is missing all the Nerd Font glyphs.
+    Starship symbols will render as boxes or question marks without the NF variant installed.
+  </div>
+</section>
+
+<!-- 5. iTerm2 -->
+<section id="iterm">
+  <h2><span class="step-num">5</span> iTerm2 settings</h2>
+  <p>
+    Install iTerm2 shell integration for tab titles, command marks, and status bar features.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># Install shell integration</span>
+<span class="cmd">curl</span> <span class="flag">-L</span> https://iterm2.com/shell_integration/zsh <span class="flag">-o</span> ~/.iterm2_shell_integration.zsh
+
+<span class="comment"># Set font via command line (or configure in iTerm2 preferences)</span>
+/usr/libexec/PlistBuddy <span class="flag">-c</span> <span class="str">"Set ':New Bookmarks:0:Normal Font' 'JetBrainsMonoNFM-Regular 18'"</span> \
+  ~/Library/Preferences/com.googlecode.iterm2.plist</pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Font</td><td><code>JetBrainsMonoNFM-Regular 18</code></td></tr>
+        <tr><td>Terminal type</td><td><code>xterm-256color</code></td></tr>
+        <tr><td>Tab style</td><td>5 (Minimal)</td></tr>
+        <tr><td>Shell integration</td><td>Enabled via <code>~/.iterm2_shell_integration.zsh</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 6. tmux -->
+<section id="tmux">
+  <h2><span class="step-num">6</span> tmux + iTerm2 control mode</h2>
+  <p>
+    tmux sessions auto-launch in iTerm2 control mode. Sessions persist across disconnects.
+    All pane output logs to <code>~/Documents/logs/</code> (iCloud-synced).
+    See the <a href="tmux-iterm2-workflow.html">full tmux workflow guide</a> for details.
+  </p>
+
+  <div class="code-block">
+    <div class="code-label">Copy tmux config from existing machine</div>
+<pre><span class="cmd">scp</span> macbook-pro:~/.tmux.conf ~/.tmux.conf
+<span class="cmd">mkdir</span> <span class="flag">-p</span> ~/Documents/logs</pre>
+  </div>
+
+  <p>Key features of the shared <code>~/.tmux.conf</code>:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Setting</th></tr></thead>
+      <tbody>
+        <tr><td>iTerm2 passthrough</td><td><code>set -g allow-passthrough on</code></td></tr>
+        <tr><td>Auto-logging</td><td>Hooks on <code>after-new-session</code> and <code>after-new-window</code></td></tr>
+        <tr><td>Log format</td><td><code>hostname-YYYY-MM-DD.HH:MM:SS.log</code></td></tr>
+        <tr><td>Prefix keys</td><td><code>Ctrl+B</code> (default) + <code>Ctrl+A</code> (secondary)</td></tr>
+        <tr><td>Vim navigation</td><td><code>h/j/k/l</code> for pane selection</td></tr>
+        <tr><td>History limit</td><td>50,000 lines</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 7. Git -->
+<section id="git">
+  <h2><span class="step-num">7</span> Git configuration</h2>
+  <p>Performance settings and identity. These make a significant difference for Starship prompt speed.</p>
+
+  <div class="code-block">
+<pre><span class="comment"># Performance (eliminates Starship git timeouts)</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> core.untrackedCache <span class="flag">true</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> core.fsmonitor <span class="flag">true</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> feature.manyFiles <span class="flag">true</span>
+
+<span class="comment"># Identity</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> user.name <span class="str">"David Whittington"</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> user.email <span class="str">"davidwhittington@users.noreply.github.com"</span></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>core.fsmonitor</code></td><td>Background daemon watches for file changes instead of scanning the whole tree</td></tr>
+        <tr><td><code>core.untrackedCache</code></td><td>Caches untracked file results between git status runs</td></tr>
+        <tr><td><code>feature.manyFiles</code></td><td>Enables preload index and other optimizations for large repos</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 8. SSH -->
+<section id="ssh">
+  <h2><span class="step-num">8</span> SSH &amp; fleet mesh</h2>
+  <p>
+    All machines in the fleet use ed25519 keys and can SSH to each other without passwords.
+    Generate a key and register it with the fleet.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># Generate ed25519 key</span>
+<span class="cmd">ssh-keygen</span> <span class="flag">-t</span> ed25519 <span class="flag">-C</span> <span class="str">"david@$(hostname -s)"</span>
+
+<span class="comment"># Copy key to each fleet machine</span>
+<span class="cmd">ssh-copy-id</span> macbook-pro
+<span class="cmd">ssh-copy-id</span> macbook-air
+<span class="cmd">ssh-copy-id</span> mac-pro</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">~/.ssh/config</div>
+<pre>Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_ed25519
+  IdentityFile ~/.ssh/id_rsa
+
+Host macbook-pro
+    HostName 192.168.6.0
+    User david
+
+Host macbook-air
+    HostName 192.168.6.177
+    User david
+
+Host mac-pro
+    HostName 192.168.5.67
+    User david</pre>
+  </div>
+
+  <div class="callout">
+    <strong>After adding the key:</strong> Ask the fleet admin to add your public key to
+    <code>~/.ssh/authorized_keys</code> on each existing machine, and add the existing machines'
+    public keys to yours. The fleet should be a full mesh.
+  </div>
+</section>
+
+<!-- 9. Security -->
+<section id="security">
+  <h2><span class="step-num">9</span> Security hardening</h2>
+  <p>
+    Run the mac-security audit to check posture, then apply the baseline.
+  </p>
+
+  <div class="code-block">
+<pre><span class="comment"># Run the audit</span>
+<span class="cmd">mac-security-audit</span> <span class="flag">--brief</span>
+
+<span class="comment"># Apply SSH hardening</span>
+<span class="cmd">printf</span> <span class="str">'%s\n'</span> \
+  <span class="str">'PasswordAuthentication no'</span> \
+  <span class="str">'PermitRootLogin no'</span> \
+  <span class="str">'PubkeyAuthentication yes'</span> \
+  <span class="str">'MaxAuthTries 3'</span> \
+  | <span class="cmd">sudo tee</span> /etc/ssh/sshd_config.d/099-hardening.conf
+
+<span class="comment"># Enable stealth firewall</span>
+<span class="cmd">sudo</span> /usr/libexec/ApplicationFirewall/socketfilterfw <span class="flag">--setstealthmode on</span>
+
+<span class="comment"># Set hostname (replace with actual machine name)</span>
+<span class="cmd">sudo scutil</span> <span class="flag">--set</span> HostName <span class="str">"new-machine-name"</span></pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Check</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>FileVault</td><td>Enabled</td></tr>
+        <tr><td>SIP</td><td>Enabled</td></tr>
+        <tr><td>Gatekeeper</td><td>Enabled</td></tr>
+        <tr><td>Application Firewall</td><td>Enabled + Stealth Mode</td></tr>
+        <tr><td>SSH PermitRootLogin</td><td>no</td></tr>
+        <tr><td>SSH PasswordAuthentication</td><td>no</td></tr>
+        <tr><td>Remote Management (ARD)</td><td>Disabled (unless needed)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 10. Claude Code -->
+<section id="claude">
+  <h2><span class="step-num">10</span> Claude Code</h2>
+  <p>Install globally via npm. Requires Node.js (installed in step 1).</p>
+
+  <div class="code-block">
+<pre><span class="cmd">npm install</span> <span class="flag">-g</span> @anthropic-ai/claude-code
+
+<span class="comment"># Verify</span>
+<span class="cmd">claude</span> <span class="flag">--version</span></pre>
+  </div>
+
+  <p>
+    Claude Code runs inside tmux sessions. If an SSH connection drops mid-task, the tmux session
+    keeps Claude running. Reattach with <code>tmux -CC attach -s main</code>.
+  </p>
+</section>
+
+<!-- 11. Full Package List -->
+<section id="packages">
+  <h2><span class="step-num">11</span> Full package list</h2>
+  <p>
+    Reference list of Homebrew packages on the macbook-pro (primary workstation).
+    Not all packages are needed on every machine. Core packages are highlighted.
+  </p>
+
+  <div class="pkg-legend">
+    <span class="leg-core">Core (install everywhere)</span>
+    <span class="leg-tool">Tools (install as needed)</span>
+    <span class="leg-fun">Fun / Optional</span>
+  </div>
+
+  <h3>Taps</h3>
+  <div class="pkg-grid">
+    <div class="pkg core">davidwhittington/mac-security</div>
+    <div class="pkg core">peonping/tap</div>
+    <div class="pkg tool">browsh-org/browsh</div>
+    <div class="pkg tool">hashicorp/tap</div>
+    <div class="pkg tool">supabase/tap</div>
+  </div>
+
+  <h3>Formulae</h3>
+  <div class="pkg-grid">
+    <div class="pkg core">antidote</div>
+    <div class="pkg core">direnv</div>
+    <div class="pkg core">git</div>
+    <div class="pkg core">gh</div>
+    <div class="pkg core">git-crypt</div>
+    <div class="pkg core">gnupg</div>
+    <div class="pkg core">mac-security</div>
+    <div class="pkg core">node</div>
+    <div class="pkg core">peon-ping</div>
+    <div class="pkg core">pinentry-mac</div>
+    <div class="pkg core">starship</div>
+    <div class="pkg core">tmux</div>
+    <div class="pkg tool">ansible</div>
+    <div class="pkg tool">browsh</div>
+    <div class="pkg tool">btop</div>
+    <div class="pkg tool">dos2unix</div>
+    <div class="pkg tool">fastfetch</div>
+    <div class="pkg tool">git-filter-repo</div>
+    <div class="pkg tool">git-svn</div>
+    <div class="pkg tool">go</div>
+    <div class="pkg tool">htop</div>
+    <div class="pkg tool">httping</div>
+    <div class="pkg tool">httrack</div>
+    <div class="pkg tool">midnight-commander</div>
+    <div class="pkg tool">minicom</div>
+    <div class="pkg tool">nmap</div>
+    <div class="pkg tool">p7zip</div>
+    <div class="pkg tool">python@3.13</div>
+    <div class="pkg tool">screen</div>
+    <div class="pkg tool">sshpass</div>
+    <div class="pkg tool">subversion</div>
+    <div class="pkg tool">supabase</div>
+    <div class="pkg tool">tcpdump</div>
+    <div class="pkg tool">telnet</div>
+    <div class="pkg tool">terraform</div>
+    <div class="pkg tool">tree</div>
+    <div class="pkg tool">watch</div>
+    <div class="pkg tool">wget</div>
+    <div class="pkg fun">cmatrix</div>
+    <div class="pkg fun">cowsay</div>
+    <div class="pkg fun">fortune</div>
+    <div class="pkg fun">jp2a</div>
+    <div class="pkg fun">lolcat</div>
+    <div class="pkg fun">vice</div>
+    <div class="pkg fun">dosbox-staging</div>
+  </div>
+
+  <h3>Casks</h3>
+  <div class="pkg-grid">
+    <div class="pkg core">font-jetbrains-mono-nerd-font</div>
+    <div class="pkg tool">font-caskaydia-mono-nerd-font</div>
+    <div class="pkg tool">deskpad</div>
+    <div class="pkg fun">virtualc64</div>
+    <div class="pkg fun">dosbox</div>
+  </div>
+
+  <h3>npm globals</h3>
+  <div class="pkg-grid">
+    <div class="pkg core">@anthropic-ai/claude-code</div>
+    <div class="pkg tool">wrangler</div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    <a href="https://github.com/davidwhittington/mac-security">mac-security</a> &middot;
+    MIT License &middot;
+    <a href="https://github.com/davidwhittington/mac-security/blob/main/CHANGELOG.md">Changelog</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-security/issues">Issues</a>
+  </p>
+</footer>
+
+<script>
+  function addCopyButton(container, getTextFn) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    container.appendChild(btn);
+    btn.addEventListener('click', function () {
+      var text = getTextFn();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          showCopied(btn);
+        }).catch(function () { fallbackCopy(text, btn); });
+      } else { fallbackCopy(text, btn); }
+    });
+  }
+  function showCopied(btn) {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  }
+  function fallbackCopy(text, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); showCopied(btn); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  document.querySelectorAll('.code-block').forEach(function (block) {
+    var pre = block.querySelector('pre');
+    addCopyButton(block, function () { return (pre.innerText || pre.textContent).trim(); });
+  });
+</script>
+
+</body>
+</html>
