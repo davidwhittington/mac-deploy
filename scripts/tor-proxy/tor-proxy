@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+#
+# tor-proxy — Tor-based internet anonymizer for macOS
+#
+# Routes system traffic through the Tor network by configuring
+# macOS SOCKS proxy settings. Supports enable, disable, status, and
+# identity renewal.
+#
+# Usage:
+#   tor-proxy enable    Start Tor and route traffic through it
+#   tor-proxy disable   Stop Tor and restore direct connections
+#   tor-proxy status    Show current state and external IP
+#   tor-proxy newid     Request a new Tor circuit (new IP)
+#
+# Requirements: tor (installed as a Homebrew dependency)
+
+set -euo pipefail
+
+NETWORK_SERVICE=""
+TOR_SOCKS_PORT=9050
+TOR_CONTROL_PORT=9051
+
+red()    { printf '\033[1;31m%s\033[0m\n' "$*"; }
+green()  { printf '\033[1;32m%s\033[0m\n' "$*"; }
+yellow() { printf '\033[1;33m%s\033[0m\n' "$*"; }
+dim()    { printf '\033[2m%s\033[0m\n' "$*"; }
+
+# Detect the active network service (Wi-Fi, Ethernet, etc.)
+detect_network_service() {
+    local route_if
+    route_if=$(route -n get default 2>/dev/null | awk '/interface:/ {print $2}')
+    if [[ -z "$route_if" ]]; then
+        red "No default network interface found. Are you connected to the internet?"
+        exit 1
+    fi
+
+    # Parse networksetup -listnetworkserviceorder to map device -> service name
+    local name=""
+    while IFS= read -r line; do
+        # Service name line: "(1) Wi-Fi"
+        if [[ "$line" =~ ^\([0-9]+\)\ (.+)$ ]]; then
+            name="${BASH_REMATCH[1]}"
+        # Device line: "(Hardware Port: Wi-Fi, Device: en0)"
+        elif [[ "$line" =~ Device:\ ([a-zA-Z0-9]+)\) ]]; then
+            if [[ "${BASH_REMATCH[1]}" == "$route_if" ]]; then
+                NETWORK_SERVICE="$name"
+                return
+            fi
+        fi
+    done < <(networksetup -listnetworkserviceorder 2>/dev/null)
+
+    red "Could not map interface ${route_if} to a network service."
+    exit 1
+}
+
+require_tor() {
+    if ! command -v tor &>/dev/null; then
+        red "Tor is not installed."
+        echo "Install via Homebrew:"
+        echo "  brew tap davidwhittington/mac-security"
+        echo "  brew install davidwhittington/mac-security/tor-proxy"
+        exit 1
+    fi
+}
+
+get_external_ip() {
+    local ip
+    if is_tor_proxied; then
+        ip=$(curl -s --socks5-hostname 127.0.0.1:${TOR_SOCKS_PORT} https://check.torproject.org/api/ip 2>/dev/null | grep -o '"IP":"[^"]*"' | cut -d'"' -f4)
+    else
+        ip=$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null)
+    fi
+    echo "${ip:-unknown}"
+}
+
+is_tor_running() {
+    pgrep -x tor &>/dev/null
+}
+
+is_tor_proxied() {
+    local proxy
+    proxy=$(networksetup -getsocksfirewallproxy "$NETWORK_SERVICE" 2>/dev/null | awk '/^Enabled/ {print $2}')
+    [[ "$proxy" == "Yes" ]]
+}
+
+cmd_enable() {
+    require_tor
+    detect_network_service
+
+    if is_tor_running && is_tor_proxied; then
+        green "Tor proxy is already active on ${NETWORK_SERVICE}."
+        cmd_status
+        return
+    fi
+
+    # Start Tor if not running
+    if ! is_tor_running; then
+        yellow "Starting Tor..."
+        brew services start tor &>/dev/null
+        # Wait for Tor to bootstrap
+        local tries=0
+        while ! curl -s --socks5-hostname 127.0.0.1:${TOR_SOCKS_PORT} https://check.torproject.org/api/ip &>/dev/null; do
+            tries=$((tries + 1))
+            if [[ $tries -ge 30 ]]; then
+                red "Tor failed to start within 30 seconds."
+                exit 1
+            fi
+            sleep 1
+        done
+        green "Tor is running."
+    fi
+
+    # Configure macOS SOCKS proxy
+    yellow "Configuring SOCKS proxy on ${NETWORK_SERVICE}..."
+    networksetup -setsocksfirewallproxy "$NETWORK_SERVICE" 127.0.0.1 "$TOR_SOCKS_PORT"
+    networksetup -setsocksfirewallproxystate "$NETWORK_SERVICE" on
+
+    # Bypass proxy for local addresses
+    networksetup -setproxybypassdomains "$NETWORK_SERVICE" \
+        "*.local" "169.254/16" "127.0.0.1" "localhost"
+
+    green "Tor proxy enabled."
+    echo ""
+    cmd_status
+}
+
+cmd_disable() {
+    detect_network_service
+
+    yellow "Disabling SOCKS proxy on ${NETWORK_SERVICE}..."
+    networksetup -setsocksfirewallproxystate "$NETWORK_SERVICE" off
+
+    if is_tor_running; then
+        yellow "Stopping Tor..."
+        brew services stop tor &>/dev/null 2>&1 || pkill -x tor 2>/dev/null || true
+    fi
+
+    green "Tor proxy disabled. Direct connection restored."
+    echo ""
+    dim "External IP: $(get_external_ip)"
+}
+
+cmd_status() {
+    detect_network_service
+
+    echo "Network service: ${NETWORK_SERVICE}"
+
+    if is_tor_running; then
+        green "Tor process:    running"
+    else
+        red "Tor process:    not running"
+    fi
+
+    if is_tor_proxied; then
+        green "SOCKS proxy:    enabled (127.0.0.1:${TOR_SOCKS_PORT})"
+    else
+        dim "SOCKS proxy:    disabled"
+    fi
+
+    local ip
+    ip=$(get_external_ip)
+    echo "External IP:    ${ip}"
+
+    if is_tor_running && is_tor_proxied; then
+        local check
+        check=$(curl -s --socks5-hostname 127.0.0.1:${TOR_SOCKS_PORT} https://check.torproject.org/api/ip 2>/dev/null)
+        if echo "$check" | grep -q '"IsTor":true'; then
+            green "Tor check:      confirmed (traffic is routed through Tor)"
+        else
+            yellow "Tor check:      unconfirmed (some apps may bypass SOCKS)"
+        fi
+    fi
+}
+
+cmd_newid() {
+    if ! is_tor_running; then
+        red "Tor is not running. Run 'tor-proxy enable' first."
+        exit 1
+    fi
+
+    # Send NEWNYM signal via control port if available, otherwise restart
+    if nc -z 127.0.0.1 "$TOR_CONTROL_PORT" 2>/dev/null; then
+        echo -e 'AUTHENTICATE ""\r\nSIGNAL NEWNYM\r\nQUIT' | nc 127.0.0.1 "$TOR_CONTROL_PORT" &>/dev/null
+        green "New Tor identity requested. Circuit will change within ~10 seconds."
+    else
+        yellow "Control port not available. Restarting Tor for new identity..."
+        brew services restart tor &>/dev/null 2>&1 || (pkill -x tor; sleep 1; brew services start tor &>/dev/null)
+        sleep 5
+        green "Tor restarted with new circuits."
+    fi
+
+    sleep 3
+    detect_network_service
+    dim "External IP: $(get_external_ip)"
+}
+
+usage() {
+    echo "Usage: tor-proxy <command>"
+    echo ""
+    echo "Commands:"
+    echo "  enable    Start Tor and route traffic through it"
+    echo "  disable   Stop Tor and restore direct connections"
+    echo "  status    Show current state and external IP"
+    echo "  newid     Request a new Tor circuit (new exit IP)"
+    echo ""
+    echo "Note: 'enable' and 'disable' may prompt for your password"
+    echo "      (networksetup requires admin privileges)."
+}
+
+case "${1:-}" in
+    enable)  cmd_enable ;;
+    disable) cmd_disable ;;
+    status)  cmd_status ;;
+    newid)   cmd_newid ;;
+    *)       usage ;;
+esac
