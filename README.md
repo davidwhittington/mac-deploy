@@ -44,10 +44,8 @@ mac-security/
 │   ├── Brewfile.base     # Shared baseline Homebrew packages
 │   └── machines/         # (gitignored) local captures; canonical copy in private/
 ├── scripts/
-│   ├── audit/
-│   │   └── security-audit.sh   # Full security posture audit → markdown
-│   └── tor-proxy/
-│       └── tor-proxy            # Tor SOCKS proxy anonymizer
+│   └── audit/
+│       └── security-audit.sh   # Full security posture audit → markdown
 ├── shell/                # Shared zsh config, aliases, env vars (coming)
 ├── config/               # App and tool config templates (coming)
 └── private/              # Git submodule - per-machine data (not public)
@@ -73,9 +71,6 @@ mac-security-audit --brief
 sudo mac-security-harden-ssh
 sudo mac-security-firewall
 
-# Tor anonymizer (standalone formula)
-brew install davidwhittington/mac-security/tor-proxy
-tor-proxy enable
 ```
 
 | Command | What it does |
@@ -86,7 +81,6 @@ tor-proxy enable
 | `mac-security-first-run` | Interactive bootstrap: Homebrew, audit, hardening, re-audit |
 | `mac-security-capture` | Snapshot Homebrew packages and shell config |
 | `mac-security-deploy` | Restore a saved machine profile to a new Mac |
-| `tor-proxy` | Route system traffic through Tor via SOCKS proxy (enable/disable/status/newid) |
 
 ### Option B — Clone the repo (full workflow with audit history)
 
@@ -185,13 +179,19 @@ Technical documentation in [docs/guides/](docs/guides/):
 - [Firewall: Application Firewall vs pf](docs/guides/firewall-pf-vs-application-firewall.md) — port-level rules with pf; solving the SSH/block-all conflict
 - [Automated Security Drift Detection](docs/guides/automated-security-drift-detection.md) — schedule audits with launchd; alert on security state changes
 - [Removing and Disabling Insecure Services](docs/guides/removing-insecure-services.md) — ARD, Screen Sharing, Remote Apple Events, AirDrop; verification and post-update recovery
-- [Tor Proxy](docs/guides/tor-proxy.md) — route macOS traffic through Tor; SOCKS proxy setup, limitations, pf hardening, troubleshooting
 
 ---
 
 ## Security Baseline
 
 See [docs/security/README.md](docs/security/README.md) for the full baseline - required settings, recommended settings, and a reference table of insecure services to audit or remove.
+
+---
+
+## Related
+
+- [mac-tools](https://github.com/davidwhittington/mac-tools) — standalone macOS utilities (tor-proxy, chromium-browse, brew-upgrade, setup-claude)
+- [linux-security](https://github.com/davidwhittington/linux-security) — VPS/server security hardening
 
 ---
 
