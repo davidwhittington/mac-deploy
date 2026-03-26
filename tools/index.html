@@ -274,28 +274,28 @@
   <div class="hero-badge">Tool Library</div>
   <h1>macOS security<br><span>and automation tools.</span></h1>
   <p class="hero-sub">
-    Everything ships through a single Homebrew tap. Install what you need,
-    skip what you don't.
+    Security hardening and auditing tools ship through the mac-security tap.
+    Privacy and utility tools have moved to <a href="https://github.com/davidwhittington/mac-tools">mac-tools</a>.
   </p>
 
   <div class="install-block">
     <div class="install-label">Add the tap</div>
     <pre>brew tap davidwhittington/mac-security</pre>
     <div class="install-note">
-      Then install individual tools below. macOS Ventura / Sonoma / Sequoia / Tahoe &middot; Apple Silicon and Intel
+      macOS Ventura / Sonoma / Sequoia / Tahoe &middot; Apple Silicon and Intel
     </div>
   </div>
 </div>
 
 <section>
-  <h2>Available tools</h2>
-  <p>Each tool installs independently. Click for documentation and usage details.</p>
+  <h2>Security tools</h2>
+  <p>Security hardening and auditing for macOS workstations.</p>
 
   <div class="tools-grid">
 
     <a href="/mac-security/" class="tool-card">
       <div class="tool-info">
-        <div class="tool-name">mac-security<span class="tool-version">v0.9.0</span></div>
+        <div class="tool-name">mac-security<span class="tool-version">v0.10.0</span></div>
         <div class="tool-desc">
           Full security posture audit and hardening toolkit for macOS workstations.
           FileVault, SIP, Gatekeeper, firewall, SSH config, open ports, sharing services,
@@ -312,22 +312,65 @@
       </div>
     </a>
 
-    <a href="/mac-security/tools/chromium-browse/" class="tool-card">
+  </div>
+</section>
+
+<section>
+  <h2>Also see: mac-tools</h2>
+  <p>Privacy, maintenance, and development utilities have moved to a dedicated repo and tap.</p>
+
+  <div class="tools-grid">
+
+    <a href="https://github.com/davidwhittington/mac-tools/tree/main/tor-proxy" class="tool-card">
       <div class="tool-info">
-        <div class="tool-name">chromium-browse<span class="tool-version">v0.9.0</span></div>
-        <div class="tool-desc">
-          Headless browsing traffic generator for any Chromium-based browser.
-          Drives Island, Chrome, Edge, Brave, Arc, Comet, Atlas, and others via their
-          native DevTools Protocol. Randomized URL visits, link following, scroll
-          simulation, and configurable dwell times.
+        <div class="tool-name">tor-proxy</div>
+        <div class="tool-desc">Route macOS system traffic through the Tor network via SOCKS proxy.</div>
+        <div class="tool-tags">
+          <span class="tool-tag tag-network">privacy</span>
         </div>
+      </div>
+      <div class="tool-install">
+        <code>brew install davidwhittington/mac-tools/tor-proxy</code>
+      </div>
+    </a>
+
+    <a href="https://github.com/davidwhittington/mac-tools/tree/main/chromium-browse" class="tool-card">
+      <div class="tool-info">
+        <div class="tool-name">chromium-browse</div>
+        <div class="tool-desc">Headless browsing traffic generator for any Chromium-based browser via CDP.</div>
         <div class="tool-tags">
           <span class="tool-tag tag-network">network</span>
           <span class="tool-tag tag-automation">automation</span>
         </div>
       </div>
       <div class="tool-install">
-        <code>brew install chromium-browse</code>
+        <code>brew install davidwhittington/mac-tools/chromium-browse</code>
+      </div>
+    </a>
+
+    <a href="https://github.com/davidwhittington/mac-tools/tree/main/brew-upgrade" class="tool-card">
+      <div class="tool-info">
+        <div class="tool-name">brew-upgrade</div>
+        <div class="tool-desc">Automated Homebrew package updater with change logging.</div>
+        <div class="tool-tags">
+          <span class="tool-tag tag-automation">maintenance</span>
+        </div>
+      </div>
+      <div class="tool-install">
+        <code>brew install davidwhittington/mac-tools/brew-upgrade</code>
+      </div>
+    </a>
+
+    <a href="https://github.com/davidwhittington/mac-tools/tree/main/setup-claude" class="tool-card">
+      <div class="tool-info">
+        <div class="tool-name">setup-claude</div>
+        <div class="tool-desc">Claude Code installation and configuration for new Macs.</div>
+        <div class="tool-tags">
+          <span class="tool-tag tag-automation">dev environment</span>
+        </div>
+      </div>
+      <div class="tool-install">
+        <code>brew install davidwhittington/mac-tools/setup-claude</code>
       </div>
     </a>
 
@@ -335,28 +378,26 @@
 </section>
 
 <section>
-  <h2>Installing tools</h2>
-  <p>All tools live in the <code style="color:var(--green);font-family:monospace">davidwhittington/mac-security</code> tap. Add it once, then install by name.</p>
+  <h2>Installing</h2>
+  <p>Security tools and utility tools use separate taps.</p>
   <div class="install-block" style="max-width:100%;margin:1.25rem 0 0;">
     <div class="install-label">Examples</div>
-    <pre><span style="color:var(--muted)"># Add the tap (one time)</span>
+    <pre><span style="color:var(--muted)"># Security hardening and auditing</span>
 brew tap davidwhittington/mac-security
+brew install davidwhittington/mac-security/mac-security
 
-<span style="color:var(--muted)"># Install individual tools</span>
-brew install mac-security
-brew install chromium-browse
-
-<span style="color:var(--muted)"># Upgrade everything from the tap</span>
-brew upgrade davidwhittington/mac-security/mac-security
-brew upgrade davidwhittington/mac-security/chromium-browse</pre>
+<span style="color:var(--muted)"># Utility and privacy tools</span>
+brew tap davidwhittington/mac-tools
+brew install davidwhittington/mac-tools/tor-proxy
+brew install davidwhittington/mac-tools/chromium-browse</pre>
   </div>
 </section>
 
 <footer>
   <p>
     <a href="/mac-security/">mac-security</a> &middot;
+    <a href="https://github.com/davidwhittington/mac-tools">mac-tools</a> &middot;
     <a href="https://github.com/davidwhittington/mac-security">Source</a> &middot;
-    <a href="https://github.com/davidwhittington/homebrew-mac-security">Homebrew Tap</a> &middot;
     MIT License
   </p>
 </footer>
